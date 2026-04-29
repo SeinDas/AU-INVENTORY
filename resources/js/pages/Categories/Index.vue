@@ -1,7 +1,7 @@
 <script setup>
 import { ref } from 'vue';
 import { useForm, Head } from '@inertiajs/vue3';
-import AuthenticatedLayout from '@/layouts/AuthenticatedLayout.vue';
+import AppSidebar from '@/layouts/AppLayout.vue';
 import Card from '@/components/ui/card/Card.vue';
 import { Tag, Trash2, Plus, Loader2, FolderTree, Pencil, X, Check } from 'lucide-vue-next';
 
@@ -43,7 +43,7 @@ const deleteCategory = (id) => {
 <template>
     <Head title="Classifications" />
 
-    <AuthenticatedLayout>
+    <AppSidebar>
         <div class="max-w-5xl mx-auto space-y-6">
             <div class="flex items-center justify-between border-b border-slate-200 pb-5">
                 <div>
@@ -128,5 +128,5 @@ const deleteCategory = (id) => {
                 </div>
             </div>
         </div>
-    </AuthenticatedLayout>
+    </AppSidebar>
 </template>

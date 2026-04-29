@@ -2,7 +2,7 @@
 import { ref, computed } from 'vue';
 // BAGO: Dinagdag ang usePage sa import para makuha ang role
 import { Link, Head, usePage } from '@inertiajs/vue3'; 
-import AuthenticatedLayout from '@/layouts/AuthenticatedLayout.vue';
+import AppSidebar from '@/layouts/AppLayout.vue';
 import Card from '@/components/ui/card/Card.vue';
 import { 
     History, Download, Eye, PackagePlus, PackageMinus, XCircle, User, Building2, Box, Calendar, Filter, ArrowUpDown
@@ -92,7 +92,7 @@ const resetFilters = () => {
 
 <template>
     <Head title="Transaction History" />
-    <AuthenticatedLayout>
+    <AppSidebar>
         <div class="max-w-[1600px] mx-auto p-4 space-y-4">
             <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
                 <div class="flex items-center gap-3">
@@ -259,5 +259,5 @@ const resetFilters = () => {
                 </div>
             </div>
         </div>
-    </AuthenticatedLayout>
+    </AppSidebar>
 </template>

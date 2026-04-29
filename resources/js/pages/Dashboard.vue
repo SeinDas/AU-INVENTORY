@@ -1,5 +1,5 @@
 <script setup>
-import AuthenticatedLayout from '@/layouts/AuthenticatedLayout.vue';
+import AppSidebar from '@/layouts/AppLayout.vue';
 import Card from '@/components/ui/card/Card.vue'; 
 import { Head, Link, usePage } from '@inertiajs/vue3'; 
 import { computed } from 'vue';
@@ -69,7 +69,7 @@ const chartOptions = {
 <template>
     <Head title="Dashboard" />
 
-    <AuthenticatedLayout>
+    <AppSidebar>
         <div class="space-y-8 max-w-7xl mx-auto">
             <div class="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-slate-200 pb-6">
                 <div>
@@ -188,5 +188,5 @@ const chartOptions = {
                 </Card>
             </div>
         </div>
-    </AuthenticatedLayout>
+    </AppSidebar>
 </template>

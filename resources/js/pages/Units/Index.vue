@@ -1,7 +1,7 @@
 <script setup>
 import { ref } from 'vue';
 import { useForm, Head } from '@inertiajs/vue3';
-import AuthenticatedLayout from '@/layouts/AuthenticatedLayout.vue';
+import AppSidebar from '@/layouts/AppLayout.vue';
 import Card from '@/components/ui/card/Card.vue';
 import { Ruler, Trash2, Plus, Loader2, Scale, Pencil, X, Check } from 'lucide-vue-next';
 
@@ -43,7 +43,7 @@ const deleteUnit = (id) => {
 <template>
     <Head title="Units of Measurement" />
 
-    <AuthenticatedLayout>
+    <AppSidebar>
         <div class="max-w-5xl mx-auto space-y-6">
             <div class="flex items-center justify-between border-b border-slate-200 pb-5">
                 <div>
@@ -120,5 +120,5 @@ const deleteUnit = (id) => {
                 </div>
             </div>
         </div>
-    </AuthenticatedLayout>
+    </AppSidebar>
 </template>

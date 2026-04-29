@@ -1,7 +1,7 @@
 <script setup>
 import { ref } from 'vue';
 import { Head, useForm } from '@inertiajs/vue3';
-import AuthenticatedLayout from '../../layouts/AuthenticatedLayout.vue';
+import AppSidebar from '../../layouts/AppLayout.vue';
 import { UserPlus, Pencil, Trash2, Shield, X } from 'lucide-vue-next';
 
 const props = defineProps({
@@ -70,7 +70,7 @@ const deleteUser = (id) => {
 <template>
     <Head title="Manage Users" />
 
-    <AuthenticatedLayout>
+    <AppSidebar>
         <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
             <div class="p-6 border-b border-slate-200 flex justify-between items-center bg-slate-50/50">
                 <div>
@@ -194,5 +194,5 @@ const deleteUser = (id) => {
                 </form>
             </div>
         </div>
-    </AuthenticatedLayout>
+    </AppSidebar>
 </template>
