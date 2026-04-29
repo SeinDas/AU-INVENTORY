@@ -39,7 +39,7 @@ const rawNavItems = [
         roles: ['admin', 'clerk', 'custodian', 'viewer'],
     },
     {
-        title: 'Asset Categories',
+        title: 'Asset Classifications',
         href: route('categories.index'),
         icon: Tags,
         roles: ['admin', 'clerk', 'custodian'],
@@ -64,20 +64,6 @@ const rawFooterNavItems = [
         href: route('users.index'),
         icon: User,
         roles: ['admin'],
-    },
-    {
-        title: 'Repository',
-        href: 'https://github.com/laravel/vue-starter-kit',
-        icon: FolderGit2,
-        roles: ['admin', 'clerk', 'custodian', 'viewer'],
-        external: true,
-    },
-    {
-        title: 'Documentation',
-        href: 'https://laravel.com/docs/starter-kits#vue',
-        icon: BookOpen,
-        roles: ['admin', 'clerk', 'custodian', 'viewer'],
-        external: true,
     },
 ];
 

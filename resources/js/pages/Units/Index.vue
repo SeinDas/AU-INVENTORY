@@ -1,11 +1,12 @@
 <script setup>
 import { ref } from 'vue';
 import { useForm, Head } from '@inertiajs/vue3';
-import AppSidebar from '@/layouts/AppLayout.vue';
+import AppLayout from '@/layouts/AppLayout.vue';
 import Card from '@/components/ui/card/Card.vue';
 import { Ruler, Trash2, Plus, Loader2, Scale, Pencil, X, Check } from 'lucide-vue-next';
 
 const props = defineProps({ units: Array });
+const breadcrumbs = [{ title: "Measurement Units", href: "#" }];
 
 const form = useForm({ name: '' });
 const editingId = ref(null);
@@ -43,7 +44,7 @@ const deleteUnit = (id) => {
 <template>
     <Head title="Units of Measurement" />
 
-    <AppSidebar>
+    <AppLayout :breadcrumbs="breadcrumbs">
         <div class="max-w-5xl mx-auto space-y-6">
             <div class="flex items-center justify-between border-b border-slate-200 pb-5">
                 <div>
@@ -120,5 +121,5 @@ const deleteUnit = (id) => {
                 </div>
             </div>
         </div>
-    </AppSidebar>
+    </AppLayout>
 </template>

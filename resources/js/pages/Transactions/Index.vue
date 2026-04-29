@@ -2,7 +2,7 @@
 import { ref, computed } from 'vue';
 // BAGO: Dinagdag ang usePage sa import para makuha ang role
 import { Link, Head, usePage } from '@inertiajs/vue3'; 
-import AppSidebar from '@/layouts/AppLayout.vue';
+import AppLayout from '@/layouts/AppLayout.vue';
 import Card from '@/components/ui/card/Card.vue';
 import { 
     History, Download, Eye, PackagePlus, PackageMinus, XCircle, User, Building2, Box, Calendar, Filter, ArrowUpDown
@@ -10,6 +10,7 @@ import {
 
 // BAGO: Kinuha ang userRole para magamit pang-hide ng buttons
 const page = usePage();
+const breadcrumbs = [{ title: "Transaction History", href: "#" }];
 const userRole = computed(() => (page.props.auth.user?.role || 'Viewer').toLowerCase());
 
 const props = defineProps({ 
@@ -92,7 +93,7 @@ const resetFilters = () => {
 
 <template>
     <Head title="Transaction History" />
-    <AppSidebar>
+    <AppLayout :breadcrumbs="breadcrumbs">
         <div class="max-w-[1600px] mx-auto p-4 space-y-4">
             <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
                 <div class="flex items-center gap-3">
@@ -259,5 +260,5 @@ const resetFilters = () => {
                 </div>
             </div>
         </div>
-    </AppSidebar>
+    </AppLayout>
 </template>

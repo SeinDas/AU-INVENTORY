@@ -170,3 +170,22 @@
         @apply bg-background text-foreground;
     }
 }
+
+/* --- OPTIMIZED DASHBOARD COMPONENTS --- */
+@layer components {
+    .card-outline {
+        @apply border-none shadow-none ring-1 ring-slate-200 bg-white dark:bg-card dark:ring-border;
+    }
+
+    .heading-micro {
+        @apply text-[10px] font-bold uppercase tracking-[0.2em];
+    }
+
+    .stat-value {
+        @apply text-2xl font-bold;
+    }
+
+    .icon-box {
+        @apply p-2 rounded-sm flex items-center justify-center;
+    }
+}

@@ -1,13 +1,15 @@
 <script setup>
 import { ref, computed } from 'vue';
 import { Link, Head, useForm } from '@inertiajs/vue3';
-import AppSidebar from '@/layouts/AppLayout.vue';
+import AppLayout from '@/layouts/AppLayout.vue';
 import Card from '@/components/ui/card/Card.vue';
 import { Plus, Package, AlertTriangle, FileText, Pencil, Trash2, Search } from 'lucide-vue-next';
 
 const props = defineProps({
     items: Array
 });
+
+const breadcrumbs = [{ title: "Inventory Registry", href: route('web.items.index') }];
 
 // Search functionality
 const searchQuery = ref('');
@@ -50,7 +52,7 @@ const isLowStock = (item) => {
 
     <Head title="Inventory Registry" />
 
-    <AppSidebar>
+    <AppLayout :breadcrumbs="breadcrumbs">
         <div class="space-y-8 max-w-7xl mx-auto">
             <div class="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-slate-200 pb-6">
                 <div>
@@ -164,5 +166,5 @@ const isLowStock = (item) => {
                 <span v-else>Authorized Registry Management: {{ $page.props.auth.user.role }}</span>
             </div>
         </div>
-    </AppSidebar>
+    </AppLayout>
 </template>

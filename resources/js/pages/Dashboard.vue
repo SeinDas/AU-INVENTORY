@@ -1,5 +1,5 @@
 <script setup>
-import AppSidebar from '@/layouts/AppLayout.vue';
+import AppLayout from "@/layouts/AppLayout.vue";
 import Card from '@/components/ui/card/Card.vue'; 
 import { Head, Link, usePage } from '@inertiajs/vue3'; 
 import { computed } from 'vue';
@@ -21,7 +21,7 @@ import {
 ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale);
 
 const page = usePage();
-// BAGO: Nilagyan ng '?.' para hindi mag-crash kapag biglang na-expire ang session
+const breadcrumbs = [{ title: "Dashboard", href: "/users" }];
 const userName = computed(() => page.props.auth.user?.name || 'Viewer');
 
 const props = defineProps({
@@ -68,9 +68,9 @@ const chartOptions = {
 
 <template>
     <Head title="Dashboard" />
-
-    <AppSidebar>
+    <AppLayout :breadcrumbs="breadcrumbs">
         <div class="space-y-8 max-w-7xl mx-auto">
+            
             <div class="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-slate-200 pb-6">
                 <div>
                     <h1 class="text-2xl font-bold text-slate-900 tracking-tight">Administrative Overview</h1>
@@ -88,43 +88,43 @@ const chartOptions = {
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
-                <Card class="p-5 border-none shadow-none ring-1 ring-slate-200">
+                <Card class="card-outline p-5">
                     <div class="flex items-center gap-3 mb-3">
-                        <div class="p-2 bg-slate-50 rounded-sm text-slate-600"><Box class="w-4 h-4" /></div>
-                        <h3 class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Total Items</h3>
+                        <div class="icon-box bg-slate-50 text-slate-600"><Box class="w-4 h-4" /></div>
+                        <h3 class="heading-micro text-slate-400">Total Items</h3>
                     </div>
-                    <p class="text-2xl font-bold text-slate-900">{{ stats?.total_items || 0 }}</p>
+                    <p class="stat-value text-slate-900">{{ stats?.total_items || 0 }}</p>
                 </Card>
 
-                <Card class="p-5 border-none shadow-none ring-1 ring-slate-200">
+                <Card class="card-outline p-5">
                     <div class="flex items-center gap-3 mb-3">
-                        <div class="p-2 bg-amber-50 rounded-sm text-amber-600"><CircleAlert class="w-4 h-4" /></div>
-                        <h3 class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Low Stock</h3>
+                        <div class="icon-box bg-amber-50 text-amber-600"><CircleAlert class="w-4 h-4" /></div>
+                        <h3 class="heading-micro text-slate-400">Low Stock</h3>
                     </div>
-                    <p class="text-2xl font-bold text-amber-600">{{ stats?.low_stock_count || 0 }}</p>
+                    <p class="stat-value text-amber-600">{{ stats?.low_stock_count || 0 }}</p>
                 </Card>
 
-                <Card class="p-5 border-none shadow-none ring-1 ring-slate-200">
+                <Card class="card-outline p-5">
                     <div class="flex items-center gap-3 mb-3">
-                        <div class="p-2 bg-slate-50 rounded-sm text-slate-600"><LayoutGrid class="w-4 h-4" /></div>
-                        <h3 class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Categories</h3>
+                        <div class="icon-box bg-slate-50 text-slate-600"><LayoutGrid class="w-4 h-4" /></div>
+                        <h3 class="heading-micro text-slate-400">Categories</h3>
                     </div>
-                    <p class="text-2xl font-bold text-slate-900">{{ stats?.total_categories || 0 }}</p>
+                    <p class="stat-value text-slate-900">{{ stats?.total_categories || 0 }}</p>
                 </Card>
 
-                <Card class="p-5 border-none shadow-none ring-1 ring-slate-200">
+                <Card class="card-outline p-5">
                     <div class="flex items-center gap-3 mb-3">
-                        <div class="p-2 bg-slate-50 rounded-sm text-slate-600"><HistoryIcon class="w-4 h-4" /></div>
-                        <h3 class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Updates Today</h3>
+                        <div class="icon-box bg-slate-50 text-slate-600"><HistoryIcon class="w-4 h-4" /></div>
+                        <h3 class="heading-micro text-slate-400">Updates Today</h3>
                     </div>
-                    <p class="text-2xl font-bold text-slate-900">{{ stats?.recent_updates || 0 }}</p>
+                    <p class="stat-value text-slate-900">{{ stats?.recent_updates || 0 }}</p>
                 </Card>
             </div>
 
-            <Card class="p-6 border-none ring-1 ring-slate-200 shadow-none">
+            <Card class="card-outline p-6">
                 <div class="mb-8 flex items-center justify-between">
                     <div>
-                        <h3 class="text-xs font-bold text-slate-800 uppercase tracking-widest flex items-center gap-2">
+                        <h3 class="heading-micro text-slate-800 flex items-center gap-2">
                             <TrendingUp class="w-4 h-4 text-purple-600" />
                             Stock Distribution
                         </h3>
@@ -137,9 +137,9 @@ const chartOptions = {
             </Card>
 
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <Card class="p-0 border-none ring-1 ring-slate-200 shadow-none h-[400px] flex flex-col overflow-hidden">
+                <Card class="card-outline p-0 h-[400px] flex flex-col overflow-hidden">
                     <div class="px-5 py-4 border-b border-slate-100 bg-slate-50/50">
-                        <h3 class="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] flex items-center gap-2">
+                        <h3 class="heading-micro text-slate-500 flex items-center gap-2">
                             <div class="w-1.5 h-1.5 bg-amber-500 rounded-full animate-pulse"></div>
                             Attention Required
                         </h3>
@@ -160,9 +160,9 @@ const chartOptions = {
                     </div>
                 </Card>
 
-                <Card class="p-0 border-none ring-1 ring-slate-200 shadow-none h-[400px] flex flex-col overflow-hidden">
+                <Card class="card-outline p-0 h-[400px] flex flex-col overflow-hidden">
                     <div class="px-5 py-4 border-b border-slate-100 bg-slate-50/50">
-                        <h3 class="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em]">
+                        <h3 class="heading-micro text-slate-500">
                             Recent Activity
                         </h3>
                     </div>
@@ -170,7 +170,7 @@ const chartOptions = {
                         <div v-for="trx in recent_transactions" :key="trx.id" 
                             class="px-6 py-4 flex justify-between items-center border-b border-slate-50 last:border-0 hover:bg-slate-50/50 transition-colors">
                             <div class="flex items-center gap-4">
-                                <div :class="trx.type === 'In' ? 'text-emerald-500' : 'text-slate-300'" class="p-1">
+                                <div class="icon-box p-1" :class="trx.type === 'In' ? 'text-emerald-500' : 'text-slate-300'">
                                     <HistoryIcon class="w-4 h-4" />
                                 </div>
                                 <div>
@@ -188,5 +188,7 @@ const chartOptions = {
                 </Card>
             </div>
         </div>
-    </AppSidebar>
+    </AppLayout>
+    
+    
 </template>
