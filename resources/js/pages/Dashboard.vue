@@ -6,8 +6,8 @@ import { computed } from 'vue';
 import { Bar } from 'vue-chartjs';
 import { 
     FileText, 
-    CircleAlert, // PINALITAN: Mula AlertCircle papuntang CircleAlert para iwas error
-    History as HistoryIcon, // Pinalitan ng HistoryIcon para iwas conflict sa browser history
+    CircleAlert,
+    History as HistoryIcon,
     Box, 
     LayoutGrid,
     TrendingUp
@@ -39,7 +39,7 @@ const chartData = computed(() => {
         labels: props.top_stock_items?.map(item => item.name) || [], 
         datasets: [{
             label: 'Current Stock',
-            backgroundColor: '#581c87', // Deeper purple for a grounded feel
+            backgroundColor: '#581c87', 
             borderRadius: 2,
             data: props.top_stock_items?.map(item => item.quantity) || [] 
         }]
@@ -69,8 +69,10 @@ const chartOptions = {
 <template>
     <Head title="Dashboard" />
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="space-y-8 max-w-7xl mx-auto">
+
+        <div class="mt-8 mb-8 px-4 sm:px-6 lg:px-8 space-y-8 max-w-7xl mx-auto">
             
+            <!-- Header Section -->
             <div class="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-slate-200 pb-6">
                 <div>
                     <h1 class="text-2xl font-bold text-slate-900 tracking-tight">Administrative Overview</h1>
@@ -80,7 +82,7 @@ const chartOptions = {
                 <a
                     v-if="userRole !== 'Viewer'" 
                     :href="route('reports.download')" 
-                    class="inline-flex items-center px-4 py-2 bg-slate-900 hover:bg-purple-900 text-white text-[10px] font-bold rounded-sm shadow-sm transition-all uppercase tracking-[0.15em]"
+                    class="w-full md:w-auto justify-center inline-flex items-center px-4 py-3 md:py-2 bg-slate-900 hover:bg-purple-900 text-white text-[10px] font-bold rounded-sm shadow-sm transition-all uppercase tracking-[0.15em]"
                 >
                     <FileText class="w-3.5 h-3.5 mr-2" />
                     Export Inventory Report
@@ -90,15 +92,15 @@ const chartOptions = {
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
                 <Card class="card-outline p-5">
                     <div class="flex items-center gap-3 mb-3">
-                        <div class="icon-box bg-slate-50 text-slate-600"><Box class="w-4 h-4" /></div>
+                        <Box class="w-4 h-4" />
                         <h3 class="heading-micro text-slate-400">Total Items</h3>
                     </div>
                     <p class="stat-value text-slate-900">{{ stats?.total_items || 0 }}</p>
                 </Card>
 
-                <Card class="card-outline p-5">
+                <Card class="card-outline p-5"> 
                     <div class="flex items-center gap-3 mb-3">
-                        <div class="icon-box bg-amber-50 text-amber-600"><CircleAlert class="w-4 h-4" /></div>
+                        <CircleAlert class="w-4 h-4 text-amber-600" />
                         <h3 class="heading-micro text-slate-400">Low Stock</h3>
                     </div>
                     <p class="stat-value text-amber-600">{{ stats?.low_stock_count || 0 }}</p>
@@ -106,7 +108,7 @@ const chartOptions = {
 
                 <Card class="card-outline p-5">
                     <div class="flex items-center gap-3 mb-3">
-                        <div class="icon-box bg-slate-50 text-slate-600"><LayoutGrid class="w-4 h-4" /></div>
+                        <LayoutGrid class="w-4 h-4" />
                         <h3 class="heading-micro text-slate-400">Categories</h3>
                     </div>
                     <p class="stat-value text-slate-900">{{ stats?.total_categories || 0 }}</p>
@@ -114,13 +116,14 @@ const chartOptions = {
 
                 <Card class="card-outline p-5">
                     <div class="flex items-center gap-3 mb-3">
-                        <div class="icon-box bg-slate-50 text-slate-600"><HistoryIcon class="w-4 h-4" /></div>
+                        <HistoryIcon class="w-4 h-4" />
                         <h3 class="heading-micro text-slate-400">Updates Today</h3>
                     </div>
                     <p class="stat-value text-slate-900">{{ stats?.recent_updates || 0 }}</p>
                 </Card>
             </div>
 
+            <!-- Chart Section -->
             <Card class="card-outline p-6">
                 <div class="mb-8 flex items-center justify-between">
                     <div>
@@ -144,8 +147,8 @@ const chartOptions = {
                             Attention Required
                         </h3>
                     </div>
-                    <div class="overflow-y-auto flex-1">
-                        <table class="w-full text-left border-collapse">
+                    <div class="overflow-y-auto overflow-x-auto flex-1">
+                        <table class="w-full text-left border-collapse min-w-[400px]">
                             <tbody class="divide-y divide-slate-50">
                                 <tr v-for="item in low_stock_items" :key="item.id" class="hover:bg-slate-50/50 transition-colors">
                                     <td class="px-6 py-4 text-sm text-slate-700 font-medium italic">{{ item.name }}</td>
@@ -166,29 +169,30 @@ const chartOptions = {
                             Recent Activity
                         </h3>
                     </div>
-                    <div class="overflow-y-auto flex-1">
-                        <div v-for="trx in recent_transactions" :key="trx.id" 
-                            class="px-6 py-4 flex justify-between items-center border-b border-slate-50 last:border-0 hover:bg-slate-50/50 transition-colors">
-                            <div class="flex items-center gap-4">
-                                <div class="icon-box p-1" :class="trx.type === 'In' ? 'text-emerald-500' : 'text-slate-300'">
-                                    <HistoryIcon class="w-4 h-4" />
+                    <div class="overflow-y-auto overflow-x-auto flex-1">
+                        <div class="min-w-[400px]">
+                            <div v-for="trx in recent_transactions" :key="trx.id" 
+                                class="px-6 py-4 flex justify-between items-center border-b border-slate-50 last:border-0 hover:bg-slate-50/50 transition-colors">
+                                <div class="flex items-center gap-4">
+                                    <div class="icon-box p-1" :class="trx.type === 'In' ? 'text-emerald-500 bg-emerald-50' : 'text-slate-400 bg-slate-50'">
+                                        <HistoryIcon class="w-4 h-4" />
+                                    </div>
+                                    <div>
+                                        <p class="text-sm font-bold text-slate-800 uppercase tracking-tight">{{ trx.item?.name }}</p>
+                                        <p class="text-[10px] text-slate-400 font-medium">
+                                            Recorded at {{ new Date(trx.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) }}
+                                        </p>
+                                    </div>
                                 </div>
-                                <div>
-                                    <p class="text-sm font-bold text-slate-800 uppercase tracking-tight">{{ trx.item?.name }}</p>
-                                    <p class="text-[10px] text-slate-400 font-medium">
-                                        Recorded at {{ new Date(trx.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) }}
-                                    </p>
-                                </div>
+                                <span :class="trx.type === 'In' ? 'text-emerald-600' : 'text-slate-600'" class="font-mono text-sm font-bold">
+                                    {{ trx.type === 'In' ? '+' : '-' }}{{ trx.quantity }}
+                                </span>
                             </div>
-                            <span :class="trx.type === 'In' ? 'text-emerald-600' : 'text-slate-600'" class="font-mono text-sm font-bold">
-                                {{ trx.type === 'In' ? '+' : '-' }}{{ trx.quantity }}
-                            </span>
                         </div>
                     </div>
                 </Card>
             </div>
+            
         </div>
     </AppLayout>
-    
-    
 </template>

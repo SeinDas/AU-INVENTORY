@@ -3,7 +3,7 @@ import { ref } from 'vue';
 import { useForm, Head } from '@inertiajs/vue3';
 import AppLayout from '@/layouts/AppLayout.vue';
 import Card from '@/components/ui/card/Card.vue';
-import { Tag, Trash2, Plus, Loader2, FolderTree, Pencil, X, Check } from 'lucide-vue-next';
+import { Trash2, Plus, Loader2, FolderTree, Pencil, X, Check } from 'lucide-vue-next';
 
 const props = defineProps({ categories: Array });
 const breadcrumbs = [{ title: "Asset Classifications", href: "#" }];
@@ -45,7 +45,8 @@ const deleteCategory = (id) => {
     <Head title="Classifications" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="max-w-5xl mx-auto space-y-6">
+        <div class="mt-8 mb-8 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto space-y-6">
+            
             <div class="flex items-center justify-between border-b border-slate-200 pb-5">
                 <div>
                     <h1 class="text-2xl font-bold text-slate-900 tracking-tight">Asset Classifications</h1>
@@ -55,8 +56,9 @@ const deleteCategory = (id) => {
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-12 gap-6">
+                
                 <div class="md:col-span-4">
-                    <Card class="p-6 border-slate-200 shadow-none ring-1 ring-slate-200 bg-white sticky top-6">
+                    <Card class="card-outline p-6 sticky top-6">
                         <h3 class="text-xs font-bold text-slate-800 uppercase tracking-widest mb-4 flex items-center gap-2">
                             <Plus class="w-3 h-3" /> New Classification
                         </h3>
@@ -77,14 +79,14 @@ const deleteCategory = (id) => {
                 </div>
 
                 <div class="md:col-span-8">
-                    <Card class="p-0 border-none ring-1 ring-slate-200 shadow-none overflow-hidden">
+                    <Card class="card-outline p-0 overflow-hidden">
                         <div class="px-6 py-4 bg-slate-50 border-b border-slate-200 flex justify-between items-center">
                             <span class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Active Classifications</span>
                             <span class="text-[10px] bg-slate-200 text-slate-600 px-2 py-0.5 rounded-full font-mono">{{ categories.length }} Total</span>
                         </div>
 
                         <div class="overflow-x-auto">
-                            <table class="w-full text-left border-collapse">
+                            <table class="w-full text-left border-collapse min-w-[500px]">
                                 <thead>
                                     <tr class="text-slate-600 text-[11px] font-bold uppercase tracking-wider border-b border-slate-100">
                                         <th class="py-3 px-6">Classification Name</th>
@@ -127,6 +129,7 @@ const deleteCategory = (id) => {
                         </div>
                     </Card>
                 </div>
+                
             </div>
         </div>
     </AppLayout>

@@ -2,6 +2,7 @@
 import { ref } from 'vue';
 import { Head, useForm } from '@inertiajs/vue3';
 import AppLayout from '../../layouts/AppLayout.vue';
+import Card from '@/components/ui/card/Card.vue';
 import { UserPlus, Pencil, Trash2, Shield, X } from 'lucide-vue-next';
 
 const props = defineProps({
@@ -26,7 +27,7 @@ const openAddModal = () => {
     isEditing.value = false;
     editingId.value = null;
     form.reset();
-    form.clearErrors(); // Linisin ang lumang errors
+    form.clearErrors();
     isModalOpen.value = true;
 };
 
@@ -73,64 +74,68 @@ const deleteUser = (id) => {
     <Head title="Manage Users" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-            <div class="p-6 border-b border-slate-200 flex justify-between items-center bg-slate-50/50">
-                <div>
-                    <h2 class="text-lg font-bold text-slate-800 flex items-center gap-2">
-                        <Shield class="w-5 h-5 text-purple-600" />
-                        System Users
-                    </h2>
-                    <p class="text-xs text-slate-500 mt-1">Manage who can access the ALF Inventory system.</p>
-                </div>
-                
-                <button @click="openAddModal" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-xl text-sm font-semibold flex items-center gap-2 transition-colors shadow-sm">
-                    <UserPlus class="w-4 h-4" />
-                    Add New User
-                </button>
-            </div>
+        <div class="mt-8 mb-8 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto space-y-6">
+            
+            <Card class="card-outline p-0 overflow-hidden ">
+                <div class="p-6 border-b border-slate-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-slate-50/50">
+                    <div>
+                        <h2 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+                            <Shield class="w-5 h-5 text-purple-600" />
+                            System Users
+                        </h2>
+                        <p class="text-xs text-slate-500 mt-1">Manage who can access the ALF Inventory system.</p>
+                    </div>
+                    
+                    <button @click="openAddModal" class="w-full sm:w-auto justify-center bg-purple-600 hover:bg-purple-700 text-white px-4 py-3 sm:py-2 rounded-xl text-sm font-semibold flex items-center gap-2 transition-colors shadow-sm">
+                        <UserPlus class="w-4 h-4" />
+                        Add New User
+                    </button>
+                </div> 
 
-            <div class="overflow-x-auto">
-                <table class="w-full text-left text-sm text-slate-600">
-                    <thead class="bg-slate-50 border-b border-slate-200 text-xs uppercase font-bold text-slate-500 tracking-wider">
-                        <tr>
-                            <th class="px-6 py-4">Name</th>
-                            <th class="px-6 py-4">Username</th>
-                            <th class="px-6 py-4">Email</th>
-                            <th class="px-6 py-4">Role</th>
-                            <th class="px-6 py-4 text-right">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-slate-100">
-                        <tr v-for="user in users" :key="user.id" class="hover:bg-slate-50 transition-colors">
-                            <td class="px-6 py-4 font-semibold text-slate-800">{{ user.name }}</td>
-                            <td class="px-6 py-4">{{ user.username }}</td>
-                            <td class="px-6 py-4">{{ user.email }}</td>
-                            <td class="px-6 py-4">
-                                <span class="px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-wider"
-                                    :class="{
-                                        'bg-purple-100 text-purple-700': user.role === 'Admin',
-                                        'bg-blue-100 text-blue-700': user.role === 'Custodian',
-                                        'bg-emerald-100 text-emerald-700': user.role === 'Clerk',
-                                        'bg-slate-100 text-slate-700': user.role === 'Viewer'
-                                    }">
-                                    {{ user.role }}
-                                </span>
-                            </td>
-                            <td class="px-6 py-4 flex items-center justify-end gap-2">
-                                <button @click="openEditModal(user)" class="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">
-                                    <Pencil class="w-4 h-4" />
-                                </button>
-                                
-                                <button @click="deleteUser(user.id)" class="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors">
-                                    <Trash2 class="w-4 h-4" />
-                                </button>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
+                <div class="overflow-x-auto ">
+                    <table class="w-full text-left text-sm text-slate-600 min-w-[1000px]">
+                        <thead class="bg-purple-100 border-b border-slate-200 text-xs uppercase font-bold text-slate-500 tracking-wider">
+                            <tr>
+                                <th class="px-6 py-3">Name</th>
+                                <th class="px-6 py-3">Username</th>
+                                <th class="px-6 py-3">Email</th>
+                                <th class="px-6 py-3">Role</th>
+                                <th class="px-6 py-3 text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100">
+                            <tr v-for="user in users" :key="user.id" class="hover:bg-slate-50 transition-colors">
+                                <td class="px-6 py-4 font-semibold text-slate-800">{{ user.name }}</td>
+                                <td class="px-6 py-4">{{ user.username }}</td>
+                                <td class="px-6 py-4">{{ user.email }}</td>
+                                <td class="px-6 py-4">
+                                    <span class="px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-wider"
+                                        :class="{
+                                            'bg-purple-100 text-purple-700': user.role === 'Admin',
+                                            'bg-blue-100 text-blue-700': user.role === 'Custodian',
+                                            'bg-emerald-100 text-emerald-700': user.role === 'Clerk',
+                                            'bg-slate-100 text-slate-700': user.role === 'Viewer'
+                                        }">
+                                        {{ user.role }}
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 flex items-center justify-end gap-2">
+                                    <button @click="openEditModal(user)" class="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">
+                                        <Pencil class="w-4 h-4" />
+                                    </button>
+                                    
+                                    <button @click="deleteUser(user.id)" class="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors">
+                                        <Trash2 class="w-4 h-4" />
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </Card>
         </div>
 
+        <!-- Add/Edit Modal -->
         <div v-if="isModalOpen" class="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
             <div class="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in duration-200">
                 <div class="p-6 border-b border-slate-100 flex justify-between items-center bg-purple-50/50">
