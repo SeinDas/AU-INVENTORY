@@ -1,7 +1,7 @@
 <script setup>
 import { useForm, Head, Link, usePage } from '@inertiajs/vue3';
 import { ref, computed } from 'vue';
-import AuthenticatedLayout from '@/layouts/AuthenticatedLayout.vue';
+import AppLayout from '@/layouts/AppLayout.vue';
 import Card from '@/components/ui/card/Card.vue';
 import { ArrowLeft, Plus, Trash2, Truck, Download, Save, RefreshCw } from 'lucide-vue-next';
 
@@ -23,9 +23,8 @@ const generatedRefNo = computed(() => form.date_received);
 const addItemRow = () => form.line_items.push({ item_id: '', quantity: 1, unit_cost: 0 });
 const removeItemRow = (index) => form.line_items.length > 1 && form.line_items.splice(index, 1);
 
-// Logic para sa Export
+// Export Logic
 const triggerExport = () => {
-    // Tiyaking ang route name ay tumutugma sa web.php ('web.transactions.export-daily-in')
     const url = route('web.transactions.export-daily-in', { date: submittedDate.value });
     window.open(url, '_blank');
 };
@@ -45,8 +44,7 @@ const submit = () => {
 
 <template>
     <Head title="STOCK IN" />
-    <AuthenticatedLayout>
-        <div class="max-w-6xl mx-auto space-y-8 p-2 py-8">
+    <AppLayout :breadcrumbs="[{ title: 'Transaction History', href: route('web.transactions.index') }, { title: 'Stock In', href: '#' }]">
             <div class="flex items-center gap-4 border-b border-slate-200 pb-6">
                 <Link :href="route('web.transactions.index')" class="p-2 bg-white ring-1 ring-slate-200 rounded-sm hover:bg-slate-50 text-slate-400 transition-all">
                     <ArrowLeft class="w-4 h-4" />
@@ -54,14 +52,14 @@ const submit = () => {
                 <div>
                     <h1 class="text-2xl font-bold text-slate-900 tracking-tight uppercase">STOCK IN</h1>
                     <p class="text-[10px] text-slate-500 font-bold uppercase tracking-[0.2em] mt-1">
-                        Reference Date: {{ generatedRefNo }}
+                        Reference Date: <span class="text-purple-600">{{ generatedRefNo }}</span>
                     </p>
                 </div>
             </div>
 
             <form @submit.prevent="submit" class="space-y-6">
-                <Card class="p-2 border-none ring-1 ring-slate-200 shadow-none overflow-hidden bg-white rounded-none">
-                    <div class="px-3 py-2 border-b border-slate-100 bg-slate-50/50 flex items-center gap-2 mb-4">
+                <Card class="p-2 border-none ring-1 ring-slate-200 shadow-none overflow-hidden bg-white rounded-xl">
+                    <div class="px-3 py-2 border-b border-slate-100 bg-slate-50/50 flex items-center gap-2 mb-4 rounded-t-lg">
                         <Truck class="w-3.5 h-3.5 text-slate-400" />
                         <h3 class="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em]">Inbound Log Details</h3>
                     </div>
@@ -81,7 +79,7 @@ const submit = () => {
                     </div>
                 </Card>
 
-                <Card class="p-2 border-none ring-1 ring-slate-200 shadow-none overflow-hidden bg-white rounded-none">
+                <Card class="p-2 border-none ring-1 ring-slate-200 shadow-none overflow-hidden bg-white rounded-xl">
                     <table class="w-full text-left border-collapse">
                         <thead>
                             <tr class="bg-slate-50 border-b border-slate-200">
@@ -113,7 +111,7 @@ const submit = () => {
                             </tr>
                         </tbody>
                     </table>
-                    <div v-if="!recentlySubmitted" class="p-3 bg-slate-50 border-t border-slate-100 flex justify-center mt-2">
+                    <div v-if="!recentlySubmitted" class="p-3 bg-slate-50 border-t border-slate-100 flex justify-center mt-2 rounded-b-lg">
                         <button @click="addItemRow" type="button" class="text-[10px] font-bold text-slate-900 uppercase tracking-[0.2em] flex items-center gap-2 hover:text-indigo-900 transition-all">
                             <Plus class="w-3 h-3" /> Add Item Row
                         </button>
@@ -135,6 +133,5 @@ const submit = () => {
                     </button>
                 </div>
             </form>
-        </div>
-    </AuthenticatedLayout>
+    </AppLayout>
 </template>

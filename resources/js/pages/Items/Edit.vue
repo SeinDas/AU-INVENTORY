@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { Head, useForm, Link } from '@inertiajs/vue3';
-// Fixed casing for layouts folder to resolve TS error
-import AuthenticatedLayout from '@/layouts/AuthenticatedLayout.vue';
+import AppLayout from '@/layouts/AppLayout.vue';
 import InputError from '@/components/InputError.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -47,8 +46,7 @@ const submit = () => {
 <template>
     <Head :title="`Edit ${item.name}`" />
 
-    <AuthenticatedLayout>
-        <div class="space-y-6">
+    <AppLayout :breadcrumbs="[{ title: 'Inventory Items', href: route('web.items.index') }, { title: item.name, href: route('web.items.show', item.id) }, { title: 'Edit Items', href: '#' }]" >
             <div class="flex items-center justify-between">
                 <div class="flex items-center gap-4">
                     <Link :href="route('web.items.index')" class="p-2 hover:bg-slate-200 rounded-full transition-colors">
@@ -160,6 +158,5 @@ const submit = () => {
                     </div>
                 </form>
             </div>
-        </div>
-    </AuthenticatedLayout>
+    </AppLayout>
 </template>

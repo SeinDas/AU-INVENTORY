@@ -72,10 +72,7 @@ const deleteUser = (id) => {
 
 <template>
     <Head title="Manage Users" />
-
-    <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="mt-8 mb-8 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto space-y-6">
-            
+    <AppLayout :breadcrumbs="breadcrumbs">            
             <Card class="card-outline p-0 overflow-hidden ">
                 <div class="p-6 border-b border-slate-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-slate-50/50">
                     <div>
@@ -92,49 +89,69 @@ const deleteUser = (id) => {
                     </button>
                 </div> 
 
-                <div class="overflow-x-auto ">
-                    <table class="w-full text-left text-sm text-slate-600 min-w-[1000px]">
-                        <thead class="bg-purple-100 border-b border-slate-200 text-xs uppercase font-bold text-slate-500 tracking-wider">
-                            <tr>
-                                <th class="px-6 py-3">Name</th>
-                                <th class="px-6 py-3">Username</th>
-                                <th class="px-6 py-3">Email</th>
-                                <th class="px-6 py-3">Role</th>
-                                <th class="px-6 py-3 text-right">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-slate-100">
-                            <tr v-for="user in users" :key="user.id" class="hover:bg-slate-50 transition-colors">
-                                <td class="px-6 py-4 font-semibold text-slate-800">{{ user.name }}</td>
-                                <td class="px-6 py-4">{{ user.username }}</td>
-                                <td class="px-6 py-4">{{ user.email }}</td>
-                                <td class="px-6 py-4">
-                                    <span class="px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-wider"
-                                        :class="{
-                                            'bg-purple-100 text-purple-700': user.role === 'Admin',
-                                            'bg-blue-100 text-blue-700': user.role === 'Custodian',
-                                            'bg-emerald-100 text-emerald-700': user.role === 'Clerk',
-                                            'bg-slate-100 text-slate-700': user.role === 'Viewer'
-                                        }">
-                                        {{ user.role }}
-                                    </span>
-                                </td>
-                                <td class="px-6 py-4 flex items-center justify-end gap-2">
-                                    <button @click="openEditModal(user)" class="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">
+                <div class="overflow-x-auto">
+                <table class="w-full text-left">
+                    <thead>
+                        <tr class="bg-slate-50 text-slate-600 text-[11px] font-bold uppercase tracking-[0.1em] border-b border-slate-200">
+                            <th class="py-4 px-6">Name</th>
+                            <th class="py-4 px-6">Username</th>
+                            <th class="py-4 px-6">Email</th>
+                            <th class="py-4 px-6">Role</th>
+                            <th class="py-4 px-6 text-right">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="text-slate-700 text-sm divide-y divide-slate-100">
+                        <tr v-for="user in users" :key="user.id" class="hover:bg-slate-50/80 transition-colors">
+                            <td class="py-4 px-6 font-bold text-slate-900">
+                                {{ user.name }}
+                            </td>
+                            <td class="py-4 px-6 text-slate-500">
+                                {{ user.username }}
+                            </td>
+                            <td class="py-4 px-6">
+                                {{ user.email }}
+                            </td>
+                            <td class="py-4 px-6">
+                                <span class="text-[11px] font-bold px-2 py-0.5 rounded-sm uppercase tracking-wide border"
+                                    :class="{
+                                        'text-purple-800 bg-purple-50 border-purple-100': user.role === 'Admin',
+                                        'text-blue-800 bg-blue-50 border-blue-100': user.role === 'Custodian',
+                                        'text-emerald-800 bg-emerald-50 border-emerald-100': user.role === 'Clerk',
+                                        'text-slate-700 bg-slate-50 border-slate-200': user.role === 'Viewer'
+                                    }">
+                                    {{ user.role }}
+                                </span>
+                            </td>
+                            <td class="py-4 px-6 text-right">
+                                <div class="flex justify-end gap-3">
+                                    <button @click="openEditModal(user)" class="text-slate-400 hover:text-purple-600 transition-colors">
                                         <Pencil class="w-4 h-4" />
                                     </button>
                                     
-                                    <button @click="deleteUser(user.id)" class="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors">
+                                    <button @click="deleteUser(user.id)" class="text-slate-400 hover:text-red-600 transition-colors">
                                         <Trash2 class="w-4 h-4" />
                                     </button>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </Card>
-        </div>
+                                </div>
+                            </td>
+                        </tr>
 
+                        <!-- Added matching empty state -->
+                        <tr v-if="users.length === 0">
+                            <td colspan="5" class="py-20 text-center text-slate-400">
+                                <div class="flex flex-col items-center gap-3">
+                                    <Users class="w-10 h-10 text-slate-200" />
+                                    <div class="space-y-1">
+                                        <p class="font-bold text-slate-500 uppercase text-xs tracking-widest">No Users Found</p>
+                                        <p class="text-xs italic">The current user registry is empty.</p>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            </Card>
+            
         <!-- Add/Edit Modal -->
         <div v-if="isModalOpen" class="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
             <div class="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in duration-200">

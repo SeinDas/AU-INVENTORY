@@ -91,9 +91,7 @@ const resetFilters = () => {
 
 <template>
     <Head title="Transaction History" />
-    <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="mt-8 px-4 sm:px-6 lg:px-8 max-w-[1600px] mx-auto space-y-6">
-            
+    <AppLayout :breadcrumbs="breadcrumbs">            
             <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
                 <div class="flex items-center gap-3">
                     <div class="p-2.5 bg-slate-900 rounded-xl text-white shadow-lg shadow-slate-200"><History class="w-5 h-5" /></div>
@@ -191,7 +189,6 @@ const resetFilters = () => {
                     </table>
                 </div>
             </Card>
-        </div>
 
         <div v-if="isModalOpen" 
             class="fixed inset-0 z-[999] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm"

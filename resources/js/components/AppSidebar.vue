@@ -51,7 +51,7 @@ const rawNavItems = [
         roles: ['admin', 'clerk', 'custodian'],
     },
     {
-        title: 'Stock In / Stock Out',
+        title: 'Transaction History',
         href: route('web.transactions.index'),
         icon: History,
         roles: ['clerk', 'custodian', 'viewer'],

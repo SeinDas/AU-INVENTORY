@@ -1,8 +1,8 @@
 <script setup>
 import { useForm, Head, Link } from '@inertiajs/vue3';
-import AuthenticatedLayout from '@/layouts/AuthenticatedLayout.vue';
+import AppLayout from '@/layouts/AppLayout.vue';
 import Card from '@/components/ui/card/Card.vue';
-import { ArrowLeft, Save, Loader2, Info } from 'lucide-vue-next';
+import { Save, Loader2, Info } from 'lucide-vue-next';
 import { watch } from 'vue'; 
 import axios from 'axios'; 
 
@@ -45,36 +45,19 @@ const submit = () => {
 <template>
     <Head title="Inventory Enrollment" />
 
-    <AuthenticatedLayout>
-        <div class="max-w-4xl mx-auto">
-            <div class="flex items-center justify-between mb-8 pb-4 border-b border-slate-200">
-                <div class="flex items-center gap-4">
-                    <Link 
-                        :href="route('web.items.index')" 
-                        class="group flex items-center text-slate-500 hover:text-purple-700 transition-colors"
-                    >
-                        <ArrowLeft class="w-4 h-4 mr-1 group-hover:-translate-x-1 transition-transform" />
-                        <span class="text-sm font-medium">Back to Items</span>
-                    </Link>
-                </div>
-                <div class="text-right">
-                    <h1 class="text-xl font-bold text-slate-900 tracking-tight">Add New Item</h1>
-                    <p class="text-xs text-slate-500 uppercase tracking-widest font-semibold">Asset Entry Form</p>
-                </div>
-            </div>
-            
+    <AppLayout :breadcrumbs="[{ title: 'Inventory Items', href: route('web.items.index') }, { title: 'Add New Item', href: '#' }]">    
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 <div class="lg:col-span-1">
                     <div class="space-y-6">
                         <Card class="p-6 border-slate-200 shadow-none ring-1 ring-slate-200 bg-white">
-                            <h3 class="text-sm font-bold text-slate-800 mb-2">Instructions</h3>
+                            <h1 class="text-xl font-bold text-slate-900 tracking-tight">Add New Item</h1>
                             <p class="text-sm text-slate-600 leading-relaxed">
                                 Please ensure the <span class="text-purple-700 font-semibold">Product Code</span> matches the physical tag on the asset for audit consistency.
                             </p>
                         </Card>
                         <Card class="p-4 bg-slate-100 rounded border border-slate-200">
                             <div class="flex gap-3">
-                                <info class="w-5 h-5 text-slate-400 shrink-0" />
+                                <Info class="w-5 h-5 text-slate-400 shrink-0" />
                                 <p class="text-xs text-slate-500 leading-relaxed">
                                     Fields marked with an asterisk are required for the official registry.
                                 </p>
@@ -95,7 +78,7 @@ const submit = () => {
                                 <input 
                                     v-model="form.name" 
                                     type="text" 
-                                    class="w-full border-slate-300 rounded-sm px-3 py-2 text-sm focus:ring-1 focus:ring-purple-600 focus:border-purple-600 outline-none" 
+                                    class="w-full border border-slate-300 rounded-sm px-3 py-2 text-sm focus:ring-1 focus:ring-purple-600 focus:border-purple-600 outline-none" 
                                     required 
                                 />
                             </div>
@@ -103,7 +86,7 @@ const submit = () => {
                             <div class="grid grid-cols-2 gap-4">
                                 <div>
                                     <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Category *</label>
-                                    <select v-model="form.category_id" class="w-full border-slate-300 rounded-sm px-3 py-2 text-sm focus:ring-1 focus:ring-purple-600 outline-none bg-white" required>
+                                    <select v-model="form.category_id" class="w-full border border-slate-300 rounded-sm px-3 py-2 text-sm focus:ring-1 focus:ring-purple-600 outline-none bg-white" required>
                                         <option value="">Select Classification</option>
                                         <option v-for="cat in props.categories" :key="cat.id" :value="cat.id">{{ cat.name }}</option>
                                     </select>
@@ -115,7 +98,7 @@ const submit = () => {
                                         v-model="form.product_code" 
                                         type="text" 
                                         placeholder="Auto-generated"
-                                        class="w-full border-slate-300 rounded-sm px-3 py-2 text-sm focus:ring-1 focus:ring-purple-600 focus:border-purple-600 outline-none transition-all placeholder:text-slate-300 bg-slate-50" 
+                                        class="w-full border border-slate-300 rounded-sm px-3 py-2 text-sm focus:ring-1 focus:ring-purple-600 focus:border-purple-600 outline-none transition-all placeholder:text-slate-300 bg-slate-50" 
                                         required 
                                     />
                                     <div v-if="form.errors.product_code" class="text-red-600 text-[11px] mt-1 font-semibold">{{ form.errors.product_code }}</div>
@@ -125,7 +108,7 @@ const submit = () => {
                             <div class="grid grid-cols-2 gap-4">
                                 <div>
                                     <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Unit of Measure</label>
-                                    <select v-model="form.unit_id" class="w-full border-slate-300 rounded-sm px-3 py-2 text-sm focus:ring-1 focus:ring-purple-600 outline-none bg-white">
+                                    <select v-model="form.unit_id" class="w-full border border-slate-300 rounded-sm px-3 py-2 text-sm focus:ring-1 focus:ring-purple-600 outline-none bg-white">
                                         <option value="">Select Unit</option>
                                         <option v-for="unit in props.units" :key="unit.id" :value="unit.id">{{ unit.name }}</option>
                                     </select>
@@ -135,7 +118,7 @@ const submit = () => {
                                     <input 
                                         v-model="form.quantity" 
                                         type="number" 
-                                        class="w-full border-slate-300 rounded-sm px-3 py-2 text-sm focus:ring-1 focus:ring-purple-600 outline-none" 
+                                        class="w-full border border-slate-300 rounded-sm px-3 py-2 text-sm focus:ring-1 focus:ring-purple-600 outline-none" 
                                         min="0"
                                     />
                                     <div v-if="form.errors.quantity" class="text-red-600 text-[11px] mt-1 font-semibold">{{ form.errors.quantity }}</div>
@@ -149,7 +132,7 @@ const submit = () => {
                                         v-model="form.min_stock" 
                                         type="number" 
                                         placeholder="Alert at..."
-                                        class="w-full border-slate-300 rounded-sm px-3 py-2 text-sm focus:ring-1 focus:ring-purple-600 outline-none" 
+                                        class="w-full border border-slate-300 rounded-sm px-3 py-2 text-sm focus:ring-1 focus:ring-purple-600 outline-none" 
                                         min="0"
                                     />
                                     <div v-if="form.errors.min_stock" class="text-red-600 text-[11px] mt-1 font-semibold">{{ form.errors.min_stock }}</div>
@@ -160,7 +143,7 @@ const submit = () => {
                                 <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Additional Description</label>
                                 <textarea 
                                     v-model="form.description" 
-                                    class="w-full border-slate-300 rounded-sm px-3 py-2 text-sm focus:ring-1 focus:ring-purple-600 outline-none min-h-[100px]" 
+                                    class="w-full border border-slate-300 rounded-sm px-3 py-2 text-sm focus:ring-1 focus:ring-purple-600 outline-none min-h-[100px]" 
                                     placeholder="Enter asset details or serial numbers..."
                                 ></textarea>
                             </div>
@@ -182,6 +165,5 @@ const submit = () => {
                     </Card>
                 </div>
             </div>
-        </div>
-    </AuthenticatedLayout>
+    </AppLayout>
 </template>

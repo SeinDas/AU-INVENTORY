@@ -1,7 +1,7 @@
 <script setup>
 import { useForm, Head, Link, usePage } from '@inertiajs/vue3';
 import { ref, computed } from 'vue';
-import AuthenticatedLayout from '@/layouts/AuthenticatedLayout.vue';
+import AppLayout from '@/layouts/AppLayout.vue';
 import Card from '@/components/ui/card/Card.vue';
 import { 
     ArrowLeft, Save, Loader2, AlertCircle, Plus, Trash2, 
@@ -72,8 +72,7 @@ const isExceedingAvailableStock = computed(() => {
 
 <template>
     <Head title="STOCK OUT" />
-    <AuthenticatedLayout>
-        <div class="max-w-6xl mx-auto space-y-8 p-2 py-8">
+    <AppLayout :breadcrumbs="[{ title: 'Transactions History', href: route('web.transactions.index') }, { title: 'Stock Out', href: '#' }]">
             <div class="flex items-center gap-4 border-b border-slate-200 pb-6">
                 <Link :href="route('web.transactions.index')" class="p-2 bg-white ring-1 ring-slate-200 rounded-sm hover:bg-slate-50 text-slate-400 transition-all">
                     <ArrowLeft class="w-4 h-4" />
@@ -94,8 +93,8 @@ const isExceedingAvailableStock = computed(() => {
             </div>
 
             <form @submit.prevent="submit" class="space-y-6">
-                <Card class="p-2 border-none ring-1 ring-slate-200 shadow-none overflow-hidden bg-white rounded-none">
-                    <div class="px-3 py-2 border-b border-slate-100 bg-slate-50/50 flex items-center gap-2 mb-4">
+                <Card class="p-2 border-none ring-1 ring-slate-200 shadow-none overflow-hidden bg-white rounded-xl">
+                    <div class="px-3 py-2 border-b border-slate-100 bg-slate-50/50 flex items-center gap-2 mb-4 rounded-t-lg">
                         <Building2 class="w-3.5 h-3.5 text-slate-400" />
                         <h3 class="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em]">Requisition Details</h3>
                     </div>
@@ -123,7 +122,7 @@ const isExceedingAvailableStock = computed(() => {
                     </div>
                 </Card>
 
-                <Card class="p-2 border-none ring-1 ring-slate-200 shadow-none overflow-hidden bg-white rounded-none">
+                <Card class="p-2 border-none ring-1 ring-slate-200 shadow-none overflow-hidden bg-white rounded-xl">
                     <table class="w-full text-left border-collapse">
                         <thead>
                             <tr class="bg-slate-50 border-b border-slate-200">
@@ -162,7 +161,7 @@ const isExceedingAvailableStock = computed(() => {
                             </tr>
                         </tbody>
                     </table>
-                    <div v-if="!recentlySubmitted" class="p-3 bg-slate-50 border-t border-slate-100 flex justify-center mt-2">
+                    <div v-if="!recentlySubmitted" class="p-3 bg-slate-50 border-t border-slate-100 flex justify-center mt-2 rounded-b-lg">
                         <button @click="addItemRow" type="button" class="text-[10px] font-bold text-slate-900 uppercase tracking-[0.2em] flex items-center gap-2 hover:text-purple-900 transition-all">
                             <Plus class="w-3 h-3" /> Add Item Row
                         </button>
@@ -184,6 +183,5 @@ const isExceedingAvailableStock = computed(() => {
                     </button>
                 </div>
             </form>
-        </div>
-    </AuthenticatedLayout>
+    </AppLayout>
 </template>
