@@ -9,7 +9,7 @@ const props = defineProps({
     items: Array
 });
 
-const breadcrumbs = [{ title: "Inventory Items", href: route('web.items.index') }];
+const breadcrumbs = [{ title: "Inventory Items", href: "#" }];
 
 // Search functionality
 const searchQuery = ref('');

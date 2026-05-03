@@ -3,8 +3,21 @@ import { ref } from 'vue';
 import { Head, useForm } from '@inertiajs/vue3';
 import AppLayout from '../../layouts/AppLayout.vue';
 import Card from '@/components/ui/card/Card.vue';
-import { UserPlus, Pencil, Trash2, Shield, X } from 'lucide-vue-next';
+import { UserPlus, Pencil, Trash2, Shield, X, Search, Users } from 'lucide-vue-next';
+import { Button } from '@/components/ui/button';
+import { useToast } from 'vue-toastification';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
+const toast = useToast();
 const props = defineProps({
     users: Array,
 });
@@ -14,6 +27,11 @@ const breadcrumbs = [{ title: "Manage Users", href: "#" }];
 const isModalOpen = ref(false);
 const isEditing = ref(false);
 const editingId = ref(null);
+const searchQuery = ref('');
+
+// Alert Dialog State
+const isDeleteDialogOpen = ref(false);
+const userToDelete = ref(null);
 
 const form = useForm({
     name: '',
@@ -51,6 +69,7 @@ const submit = () => {
             onSuccess: () => {
                 isModalOpen.value = false;
                 form.reset();
+                toast.success("User updated successfully!");
             },
         });
     } else {
@@ -58,38 +77,58 @@ const submit = () => {
             onSuccess: () => {
                 isModalOpen.value = false;
                 form.reset();
+                toast.success("User created successfully!");
             },
         });
     }
 };
 
-const deleteUser = (id) => {
-    if (confirm('Are you sure you want to delete this user? This action cannot be undone.')) {
-        useForm({}).delete(route('users.destroy', id));
+// Open the Alert Dialog
+const confirmDeleteUser = (id) => {
+    userToDelete.value = id;
+    isDeleteDialogOpen.value = true;
+};
+
+// Execute the deletion
+const executeDeleteUser = () => {
+    if (userToDelete.value) {
+        useForm({}).delete(route('users.destroy', userToDelete.value), {
+            onSuccess: () => {
+                toast.success("User deleted successfully!");
+                isDeleteDialogOpen.value = false;
+                userToDelete.value = null;
+            }
+        });
     }
 };
 </script>
 
 <template>
     <Head title="Manage Users" />
-    <AppLayout :breadcrumbs="breadcrumbs">            
-            <Card class="card-outline p-0 overflow-hidden ">
-                <div class="p-6 border-b border-slate-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-slate-50/50">
-                    <div>
-                        <h2 class="text-lg font-bold text-slate-800 flex items-center gap-2">
-                            <Shield class="w-5 h-5 text-purple-600" />
-                            System Users
-                        </h2>
-                        <p class="text-xs text-slate-500 mt-1">Manage who can access the ALF Inventory system.</p>
-                    </div>
-                    
-                    <button @click="openAddModal" class="w-full sm:w-auto justify-center bg-purple-600 hover:bg-purple-700 text-white px-4 py-3 sm:py-2 rounded-xl text-sm font-semibold flex items-center gap-2 transition-colors shadow-sm">
+    <AppLayout :breadcrumbs="breadcrumbs">
+
+        <div class="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-slate-200 pb-6">
+            <div>
+                <h1 class="text-2xl font-bold text-slate-900 tracking-tight">Manage Users</h1>
+                <p class="text-sm text-slate-500 mt-1 italic">Manage and configure user accounts and permissions.</p>
+            </div>
+
+            <div class="flex flex-col sm:flex-row sm:items-center gap-3 w-full md:w-auto">
+                <div class="relative w-full sm:w-64">
+                    <Search class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                    <input v-model="searchQuery" type="text" placeholder="Search"
+                        class="w-full pl-9 pr-4 py-3 sm:py-2 text-sm border border-slate-300 rounded-sm focus:ring-purple-900 focus:border-purple-900 text-slate-700 shadow-sm transition-colors" />
+                </div>
+
+                <Button @click="openAddModal" class="bg-purple-600 hover:bg-purple-700 text-white">
                         <UserPlus class="w-4 h-4" />
                         Add New User
-                    </button>
-                </div> 
-
-                <div class="overflow-x-auto">
+                </Button>
+            </div>
+        </div>
+        
+        <Card class="bg-white border border-slate-200 rounded-lg shadow-sm p-0 overflow-hidden">
+            <div class="overflow-x-auto">
                 <table class="w-full text-left">
                     <thead>
                         <tr class="bg-slate-50 text-slate-600 text-[11px] font-bold uppercase tracking-[0.1em] border-b border-slate-200">
@@ -128,14 +167,14 @@ const deleteUser = (id) => {
                                         <Pencil class="w-4 h-4" />
                                     </button>
                                     
-                                    <button @click="deleteUser(user.id)" class="text-slate-400 hover:text-red-600 transition-colors">
+                                    <!-- Changed click handler here -->
+                                    <button @click="confirmDeleteUser(user.id)" class="text-slate-400 hover:text-red-600 transition-colors">
                                         <Trash2 class="w-4 h-4" />
                                     </button>
                                 </div>
                             </td>
                         </tr>
 
-                        <!-- Added matching empty state -->
                         <tr v-if="users.length === 0">
                             <td colspan="5" class="py-20 text-center text-slate-400">
                                 <div class="flex flex-col items-center gap-3">
@@ -150,7 +189,7 @@ const deleteUser = (id) => {
                     </tbody>
                 </table>
             </div>
-            </Card>
+        </Card>
             
         <!-- Add/Edit Modal -->
         <div v-if="isModalOpen" class="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
@@ -218,5 +257,24 @@ const deleteUser = (id) => {
                 </form>
             </div>
         </div>
+
+        <!-- Alert Dialog Component -->
+        <AlertDialog v-model:open="isDeleteDialogOpen">
+            <AlertDialogContent>
+                <AlertDialogHeader>
+                    <AlertDialogTitle>Delete User</AlertDialogTitle>
+                    <AlertDialogDescription>
+                        This action cannot be undone. This will permanently delete the user account and remove their data from our servers.
+                    </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                    <AlertDialogCancel @click="isDeleteDialogOpen = false">Cancel</AlertDialogCancel>
+                    <AlertDialogAction @click="executeDeleteUser" class="bg-red-600 hover:bg-red-700 text-white">
+                        Delete User
+                    </AlertDialogAction>
+                </AlertDialogFooter>
+            </AlertDialogContent>
+        </AlertDialog>
+
     </AppLayout>
 </template>

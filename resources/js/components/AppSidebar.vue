@@ -51,7 +51,7 @@ const rawNavItems = [
         roles: ['admin', 'clerk', 'custodian'],
     },
     {
-        title: 'Transaction History',
+        title: 'Transactions',
         href: route('web.transactions.index'),
         icon: History,
         roles: ['clerk', 'custodian', 'viewer'],

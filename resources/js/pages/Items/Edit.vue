@@ -6,15 +6,17 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { 
-    Select, 
+    Select,
     SelectContent, 
     SelectItem, 
     SelectTrigger, 
     SelectValue 
 } from '@/components/ui/select';
 import { Save, ArrowLeft } from 'lucide-vue-next';
+import { useToast } from 'vue-toastification';
 import { route } from 'ziggy-js';
 
+const toast = useToast();
 const props = defineProps<{
     item: {
         id: number;
@@ -39,14 +41,22 @@ const form = useForm({
 });
 
 const submit = () => {
-    form.put(route('web.items.update', props.item.id));
+    form.put(route('web.items.update', props.item.id), {
+        preserveScroll: true,
+        onSuccess: () => {
+            toast.success("Item updated successfully!");
+        },
+        onError: () => {
+            toast.error("Please check the form for errors.");
+        }
+    });
 };
 </script>
 
 <template>
     <Head :title="`Edit ${item.name}`" />
 
-    <AppLayout :breadcrumbs="[{ title: 'Inventory Items', href: route('web.items.index') }, { title: item.name, href: route('web.items.show', item.id) }, { title: 'Edit Items', href: '#' }]" >
+    <AppLayout :breadcrumbs="[{ title: 'Inventory Items', href: route('web.items.index') }, { title: item.product_code, href: route('web.items.show', item.id) }]" >
             <div class="flex items-center justify-between">
                 <div class="flex items-center gap-4">
                     <Link :href="route('web.items.index')" class="p-2 hover:bg-slate-200 rounded-full transition-colors">
