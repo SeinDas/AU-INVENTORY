@@ -9,7 +9,7 @@ import AppLogoIcon from '@/components/AppLogoIcon.vue';
     <div class="ml-1 grid flex-1 text-left text-xs">
         <span class="truncate font-semibold leading-none ">
             Arellano Law Foundation <br>
-            <span class="text-[9px] italic">Property Inventory Management System</span>
+            <span class="text-[9px] italic">Property Management & Inventory </span>
         </span>
     </div>
 </template>
