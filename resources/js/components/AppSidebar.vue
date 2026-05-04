@@ -79,7 +79,7 @@ const footerNavItems = computed<NavItem[]>(() => filterNavItems(rawFooterNavItem
 </script>
 
 <template>
-    <Sidebar collapsible="icon" variant="inset">
+    <Sidebar collapsible="icon" variant="inset" >
         <SidebarHeader>
             <SidebarMenu>
                 <SidebarMenuItem>

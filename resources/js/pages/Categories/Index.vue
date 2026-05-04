@@ -91,7 +91,7 @@ const executeDelete = () => {
         <div class="grid grid-cols-1 md:grid-cols-12 gap-6">
             <div class="md:col-span-4">
                 <div class="bg-white border border-slate-200 shadow-sm rounded-lg p-6 sticky top-6">
-                    <h3 class="text-xs font-bold text-slate-800 uppercase tracking-widest mb-4 flex items-center gap-2">
+                    <h3 class="text-xs font-bold text-slate-800 uppercase  mb-4 flex items-center gap-2">
                         <Plus class="w-3.5 h-3.5" /> New Classification
                     </h3>
                     
@@ -111,7 +111,7 @@ const executeDelete = () => {
                         <button 
                             type="submit" 
                             :disabled="form.processing" 
-                            class="w-full bg-slate-900 hover:bg-purple-900 text-white px-4 py-2.5 text-xs font-bold rounded-sm shadow-sm transition-colors uppercase tracking-widest flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
+                            class="w-full bg-purple-600 hover:bg-purple-700 text-white px-4 py-2.5 text-xs font-bold rounded-sm shadow-sm transition-colors uppercase  flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
                         >
                             <Loader2 v-if="form.processing" class="w-3.5 h-3.5 animate-spin" />
                             {{ form.processing ? 'Adding...' : 'Add to Registry' }}
@@ -123,14 +123,14 @@ const executeDelete = () => {
             <div class="md:col-span-8">
                 <div class="bg-white border border-slate-200 shadow-sm rounded-lg overflow-hidden">
                     <div class="px-6 py-4 bg-slate-50 border-b border-slate-200 flex justify-between items-center">
-                        <span class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Active Classifications</span>
+                        <span class="text-[10px] font-bold text-slate-500 uppercase ">Active Classifications</span>
                         <span class="text-[10px] bg-slate-200 text-slate-600 px-2 py-0.5 rounded-full font-mono font-bold">{{ categories.length }} Total</span>
                     </div>
 
                     <div class="overflow-x-auto">
                         <table class="w-full text-left min-w-[500px]">
                             <thead>
-                                <tr class="text-slate-600 text-[11px] font-bold uppercase tracking-widest border-b border-slate-200 bg-white">
+                                <tr class="text-slate-600 text-[11px] font-bold uppercase border-b border-slate-200 bg-white">
                                     <th class="py-3 px-6">Classification Name</th>
                                     <th class="py-3 px-6 text-right w-40">Action</th>
                                 </tr>

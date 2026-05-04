@@ -1,9 +1,10 @@
 <script setup>
 import { ref, computed } from 'vue';
-import { Link, Head, useForm } from '@inertiajs/vue3';
+import { Link, Head, useForm,router } from '@inertiajs/vue3';
 import AppLayout from '@/layouts/AppLayout.vue';
 import Card from '@/components/ui/card/Card.vue';
 import { Plus, AlertTriangle, FileText, Pencil, Trash2, Search } from 'lucide-vue-next';
+import { Button } from '@/components/ui/button';
 
 const props = defineProps({
     items: Array
@@ -65,11 +66,14 @@ const isLowStock = (item) => {
                         class="w-full pl-9 pr-4 py-3 sm:py-2 text-sm border border-slate-300 rounded-sm focus:ring-purple-900 focus:border-purple-900 text-slate-700 shadow-sm transition-colors" />
                 </div>
 
-                <Link v-if="$page.props.auth.user.role !== 'viewer'" :href="route('web.items.create')"
-                    class="w-full sm:w-auto justify-center inline-flex items-center px-4 py-3 sm:py-2 bg-slate-900 hover:bg-purple-900 text-white text-xs font-bold rounded-sm shadow-sm transition-all uppercase tracking-widest whitespace-nowrap">
+                <Button 
+                    v-if="$page.props.auth.user.role !== 'viewer'" 
+                    @click="router.get(route('web.items.create'))"
+                    class="bg-purple-600 hover:bg-purple-700 text-white"
+                >
                     <Plus class="w-3.5 h-3.5 mr-2" />
-                    Enroll New Item
-                </Link>
+                    Add New Item
+                </Button>
             </div>
         </div>
 
@@ -77,7 +81,7 @@ const isLowStock = (item) => {
             <div class="overflow-x-auto">
                 <table class="w-full text-left">
                     <thead>
-                        <tr class="bg-slate-50 text-slate-600 text-[11px] font-bold uppercase tracking-widest border-b border-slate-200">
+                        <tr class="bg-slate-50 text-slate-600 text-[11px] font-bold uppercase  border-b border-slate-200">
                             <th class="py-4 px-6">Product Code</th>
                             <th class="py-4 px-6">Item Description</th>
                             <th class="py-4 px-6">Classification</th>
@@ -139,7 +143,7 @@ const isLowStock = (item) => {
                                 <div class="flex flex-col items-center text-center gap-3">
                                     <FileText class="w-10 h-10 text-slate-200" />
                                     <div class="space-y-1">
-                                        <p class="font-bold text-slate-500 uppercase text-xs tracking-widest">No Records Found</p>
+                                        <p class="font-bold text-slate-500 uppercase text-xs ">No Records Found</p>
                                         <p class="text-xs italic" v-if="searchQuery">No items match your search for "{{ searchQuery }}".</p>
                                         <p class="text-xs italic" v-else>The current inventory registry is empty.</p>
                                     </div>
@@ -151,7 +155,7 @@ const isLowStock = (item) => {
             </div>
         </Card>
 
-        <div class="flex items-center gap-2 text-[10px] text-slate-400 uppercase font-bold tracking-widest mt-4">
+        <div class="flex items-center gap-2 text-[10px] text-slate-400 uppercase font-bold  mt-4">
             <div class="w-1 h-1 bg-slate-300 rounded-full"></div>
             <span v-if="$page.props.auth.user.role === 'viewer'">Read-Only Audit View</span>
             <span v-else>Authorized Registry Management: {{ $page.props.auth.user.role }}</span>

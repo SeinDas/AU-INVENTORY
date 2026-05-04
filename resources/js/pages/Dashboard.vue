@@ -4,6 +4,7 @@ import Card from '@/components/ui/card/Card.vue';
 import { Head, Link, usePage } from '@inertiajs/vue3'; 
 import { computed } from 'vue';
 import { Bar } from 'vue-chartjs';
+import { Button } from "@/components/ui/button";
 import { 
     FileText, 
     CircleAlert,
@@ -75,14 +76,15 @@ const chartOptions = {
                 <p class="text-sm text-slate-500 mt-1 italic">Welcome back, {{ userName }}. Here is the current inventory status.</p>
             </div>
             
-            <a
+            <Button
+                as="a"
                 v-if="userRole !== 'Viewer'" 
                 :href="route('reports.download')" 
-                class="w-full md:w-auto justify-center inline-flex items-center px-4 py-3 md:py-2 bg-slate-900 hover:bg-purple-900 text-white text-[10px] font-bold rounded-sm shadow-sm transition-all uppercase tracking-[0.15em]"
+                class="bg-purple-600 hover:bg-purple-700 text-white"
             >
                 <FileText class="w-3.5 h-3.5 mr-2" />
                 Export Inventory Report
-            </a>
+            </Button>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">

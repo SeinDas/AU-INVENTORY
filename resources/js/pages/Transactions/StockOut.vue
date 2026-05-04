@@ -7,6 +7,7 @@ import {
     Building2, AlertTriangle, Download, RefreshCw
 } from 'lucide-vue-next';
 import { useToast } from 'vue-toastification';
+import { Button } from '@/components/ui/button';
 
 const props = defineProps({ 
     items: Array, 
@@ -87,7 +88,7 @@ const isExceedingAvailableStock = computed(() => {
             </Link>
             <div>
                 <h1 class="text-2xl font-bold text-slate-900 tracking-tight uppercase">STOCK OUT</h1>
-                <p class="text-[10px] text-slate-500 font-bold uppercase tracking-[0.2em] mt-1">
+                <p class="text-[10px] text-slate-500 font-bold uppercase  mt-1">
                     Reference No: <span class="text-purple-600">#{{ generatedRefNo }}</span>
                 </p>
             </div>
@@ -104,27 +105,27 @@ const isExceedingAvailableStock = computed(() => {
             <div class="p-2 bg-white border border-slate-300 rounded-xl">
                 <div class="px-3 py-2 border-b border-slate-100 bg-slate-100 flex items-center gap-2 mb-4 rounded-t-lg">
                     <Building2 class="w-3.5 h-3.5 text-slate-400" />
-                    <h3 class="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em]">Requisition Details</h3>
+                    <h3 class="text-[10px] font-bold text-slate-500 uppercase ">Requisition Details</h3>
                 </div>
                 
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-6 p-3">
                     <div class="space-y-1.5">
-                        <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Department</label>
+                        <label class="text-[10px] font-bold text-slate-400 uppercase ">Department</label>
                         <select v-model="form.department" class="w-full border border-slate-300 rounded-sm text-sm h-10 px-3 bg-white focus:ring-slate-900 focus:border-slate-900" required :disabled="recentlySubmitted">
                             <option value="" disabled>Select</option>
                             <option v-for="dept in departments" :key="dept.id" :value="dept.name">{{ dept.name }}</option>
                         </select>
                     </div>
                     <div class="space-y-1.5">
-                        <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Released To (Receiver)</label>
+                        <label class="text-[10px] font-bold text-slate-400 uppercase ">Released To (Receiver)</label>
                         <input v-model="form.released_to" type="text" placeholder="Full Name" class="w-full border border-slate-300 rounded-sm text-sm h-10 px-3 font-semibold focus:ring-slate-900 focus:border-slate-900" required :disabled="recentlySubmitted" />
                     </div>
                     <div class="space-y-1.5">
-                        <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Release Date</label>
+                        <label class="text-[10px] font-bold text-slate-400 uppercase ">Release Date</label>
                         <input v-model="form.date_released" type="date" class="w-full border border-slate-300 rounded-sm text-sm h-10 px-3 font-semibold focus:ring-slate-900 focus:border-slate-900" required :disabled="recentlySubmitted" />
                     </div>
                     <div class="space-y-1.5">
-                        <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Purpose / Remarks</label>
+                        <label class="text-[10px] font-bold text-slate-400 uppercase ">Purpose / Remarks</label>
                         <input v-model="form.purpose" type="text" placeholder="Optional" class="w-full border border-slate-300 rounded-sm text-sm h-10 px-3 focus:ring-slate-900 focus:border-slate-900" :disabled="recentlySubmitted" />
                     </div>
                 </div>
@@ -134,8 +135,8 @@ const isExceedingAvailableStock = computed(() => {
                 <table class="w-full text-left border-collapse">
                     <thead>
                         <tr class="bg-slate-100 border-b border-slate-300">
-                            <th class="px-6 py-3 text-[10px] font-bold uppercase tracking-widest text-slate-500">Property / Item Description</th>
-                            <th class="px-6 py-3 text-[10px] font-bold uppercase tracking-widest text-slate-500 w-48 border-l border-slate-300 text-center">Qty to Issue</th>
+                            <th class="px-6 py-3 text-[10px] font-bold uppercase  text-slate-500">Property / Item Description</th>
+                            <th class="px-6 py-3 text-[10px] font-bold uppercase  text-slate-500 w-48 border-l border-slate-300 text-center">Qty to Issue</th>
                             <th class="px-4 py-3 w-12 text-center text-slate-300">#</th>
                         </tr>
                     </thead>
@@ -170,7 +171,7 @@ const isExceedingAvailableStock = computed(() => {
                     </tbody>
                 </table>
                 <div v-if="!recentlySubmitted" class="p-3 bg-slate-100 border-t border-slate-100 flex justify-center mt-2 rounded-b-lg">
-                    <button @click="addItemRow" type="button" class="text-[10px] font-bold text-slate-900 uppercase tracking-[0.2em] flex items-center gap-2 hover:text-purple-600 transition-colors">
+                    <button @click="addItemRow" type="button" class="text-[10px] font-bold text-slate-900 uppercase  flex items-center gap-2 hover:text-purple-600 transition-colors">
                         <Plus class="w-3 h-3" /> Add Item Row
                     </button>
                 </div>
@@ -178,17 +179,17 @@ const isExceedingAvailableStock = computed(() => {
 
             <div class="flex justify-end pt-4">
                 <div v-if="recentlySubmitted" class="flex gap-3">
-                    <button @click="triggerExport" type="button" class="flex items-center px-8 py-4 bg-purple-600 hover:bg-purple-700 text-white text-[10px] font-bold rounded-sm shadow-sm transition-colors uppercase tracking-[0.2em]">
+                    <Button @click="triggerExport" type="button" class="bg-purple-600 hover:bg-purple-700 text-white">
                         <Download class="w-4 h-4 mr-3" /> Download Issuance PDF
-                    </button>
-                    <button @click="resetForm" type="button" class="flex items-center px-8 py-4 bg-white border border-slate-300 text-slate-600 text-[10px] font-bold rounded-sm hover:bg-slate-100 transition-colors uppercase tracking-[0.2em]">
+                    </Button>
+                    <Button @click="resetForm" type="button" class="flex items-center px-8 py-4 bg-white border border-slate-300 text-slate-600 text-[10px] font-bold rounded-sm hover:bg-slate-100 transition-colors uppercase ">
                         <RefreshCw class="w-4 h-4 mr-3" /> New Entry
-                    </button>
+                    </Button>
                 </div>
-                <button v-else type="submit" :disabled="form.processing" class="flex items-center px-10 py-4 bg-slate-900 hover:bg-black text-white text-[10px] font-bold rounded-sm shadow-sm transition-colors uppercase tracking-[0.2em] disabled:opacity-50">
-                    <Save class="w-4 h-4 mr-3 text-purple-400" />
+                <Button v-else type="submit" :disabled="form.processing" class="bg-purple-600 hover:bg-purple-700 text-white">
+                    <Save class="w-4 h-4 mr-3 text-white-400" />
                     {{ form.processing ? 'Processing...' : 'Save Outbound Entry' }}
-                </button>
+                </Button>
             </div>
         </form>
     </AppLayout>

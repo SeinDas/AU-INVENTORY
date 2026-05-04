@@ -6,6 +6,7 @@ import Card from '@/components/ui/card/Card.vue';
 import { 
     History, Download, Eye, PackagePlus, PackageMinus, XCircle, User, Building2, Box, Calendar, Filter, ArrowUpDown
 } from 'lucide-vue-next';
+import { Button } from '@/components/ui/button';
 
 const page = usePage();
 const breadcrumbs = [{ title: "Transactions", href: "#" }];
@@ -97,9 +98,9 @@ const resetFilters = () => {
                 <div class="p-2.5 bg-purple-600 rounded-xl text-white shadow-lg shadow-slate-200"><History class="w-5 h-5" /></div>
                 <div>
                     <h1 class="text-lg font-black text-slate-900 leading-none uppercase tracking-tight">Transaction History</h1>
-                    <p class="text-[9px] text-slate-400 font-bold uppercase tracking-widest mt-1">Inventory Flow Control</p>
+                    <p class="text-[9px] text-slate-400 font-bold uppercase mt-1">Inventory Flow Control</p>
                 </div>
-            </div>
+            </div>  
             
             <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full lg:w-auto">
                 <template v-if="userRole !== 'viewer'">
@@ -109,10 +110,10 @@ const resetFilters = () => {
                     <button v-if="filterDept" @click="exportDepartmentReport" class="w-full sm:w-auto justify-center py-3 sm:py-2 px-4 bg-blue-600 text-white text-[10px] font-black rounded-lg hover:bg-blue-700 uppercase flex items-center gap-2 shadow-md shadow-blue-100 transition-colors">
                         <Download class="w-3.5 h-3.5" /> Dept Report
                     </button>
-                    <Link :href="route('web.transactions.stock-in')" class="w-full sm:w-auto justify-center py-3 sm:py-2 px-4 bg-emerald-600 text-white text-[10px] font-black rounded-lg uppercase tracking-widest flex items-center gap-2 hover:bg-emerald-700 shadow-md transition-colors">
+                    <Link :href="route('web.transactions.stock-in')" class="w-full sm:w-auto justify-center py-3 sm:py-2 px-4 bg-emerald-600 text-white text-[10px] font-black rounded-lg uppercase  flex items-center gap-2 hover:bg-emerald-700 shadow-md transition-colors">
                         <PackagePlus class="w-3.5 h-3.5" /> Stock In
                     </Link>
-                    <Link :href="route('web.transactions.stock-out')" class="w-full sm:w-auto justify-center py-3 sm:py-2 px-4 bg-slate-900 text-white text-[10px] font-black rounded-lg uppercase tracking-widest flex items-center gap-2 hover:bg-slate-800 shadow-md transition-colors">
+                    <Link :href="route('web.transactions.stock-out')" class="w-full sm:w-auto justify-center py-3 sm:py-2 px-4 bg-slate-900 text-white text-[10px] font-black rounded-lg uppercase  flex items-center gap-2 hover:bg-slate-800 shadow-md transition-colors">
                         <PackageMinus class="w-3.5 h-3.5" /> Stock Out
                     </Link>
                 </template>
@@ -192,7 +193,7 @@ const resetFilters = () => {
             class="fixed inset-0 z-[999] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm"
             @click.self="closeViewModal">
             
-            <div class="bg-white w-full max-w-lg rounded-3xl shadow-2xl overflow-hidden border border-slate-200 animate-in fade-in zoom-in duration-200">
+            <div class="bg-white w-full max-w-lg rounded-3xl shadow-2xl overflow-hidden border border-slate-200">
                 <div class="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
                     <div class="flex items-center gap-3">
                         <div :class="selectedTransaction?.type === 'In' ? 'bg-emerald-100 text-emerald-600' : 'bg-purple-100 text-purple-600'" class="p-2 rounded-xl">
@@ -248,7 +249,7 @@ const resetFilters = () => {
                 <div class="p-4 bg-slate-50 border-t border-slate-100 flex gap-2">
                     <a v-if="userRole !== 'viewer'" :href="route('web.transactions.export-pdf', selectedTransaction?.raw_id)" 
                         target="_blank"
-                        class="flex-1 py-3 bg-slate-900 text-white text-[10px] font-black rounded-xl uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-slate-800 transition-all">
+                        class="flex-1 py-3 bg-purple-600 hover:bg-purple-700 text-white text-[10px] font-black rounded-xl uppercase  flex items-center justify-center gap-2 transition-all">
                         <Download class="w-4 h-4" /> Download PDF
                     </a>
                     <button @click="closeViewModal" class="px-6 py-3 bg-white border border-slate-200 text-slate-500 text-[10px] font-black rounded-xl uppercase hover:bg-slate-100">Close</button>

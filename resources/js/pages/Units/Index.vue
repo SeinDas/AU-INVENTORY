@@ -91,7 +91,7 @@ const executeDelete = () => {
             
             <div class="md:col-span-4">
                 <div class="bg-white border border-slate-200 rounded-xl p-6 sticky top-6">
-                    <h3 class="text-xs font-bold text-slate-800 uppercase tracking-widest mb-4 flex items-center gap-2">
+                    <h3 class="text-xs font-bold text-slate-800 uppercase  mb-4 flex items-center gap-2">
                         <Plus class="w-3 h-3" /> Define New Unit
                     </h3>
                     
@@ -102,7 +102,7 @@ const executeDelete = () => {
                             <div v-if="form.errors.name" class="text-red-500 text-[10px] mt-1">{{ form.errors.name }}</div>
                         </div>
                         
-                        <button type="submit" :disabled="form.processing" class="w-full bg-slate-900 hover:bg-purple-900 text-white px-4 py-2.5 text-xs font-bold rounded-sm transition-colors uppercase tracking-widest flex items-center justify-center gap-2 disabled:opacity-50">
+                        <button type="submit" :disabled="form.processing" class="w-full bg-purple-600 hover:bg-purple-700 text-white px-4 py-2.5 text-xs font-bold rounded-sm transition-colors uppercase  flex items-center justify-center gap-2 disabled:opacity-50">
                             <Loader2 v-if="form.processing" class="w-3.5 h-3.5 animate-spin" />
                             {{ form.processing ? 'Processing' : 'Register Unit' }}
                         </button>
@@ -113,7 +113,7 @@ const executeDelete = () => {
             <div class="md:col-span-8">
                 <div class="bg-white border border-slate-200 rounded-xl p-0 overflow-hidden">
                     <div class="px-6 py-4 bg-slate-50 border-b border-slate-200 flex justify-between items-center">
-                        <span class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Authorized Metrics</span>
+                        <span class="text-[10px] font-bold text-slate-500 uppercase ">Authorized Metrics</span>
                         <span class="text-[10px] bg-slate-200 text-slate-600 px-2 py-0.5 rounded-full font-mono">{{ units.length }} Registered</span>
                     </div>
 
