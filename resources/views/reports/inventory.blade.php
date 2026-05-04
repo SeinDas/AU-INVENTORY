@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>{{ $title }}</title>
+    <title>ALF Inventory Report</title>
     <style>
         /* PDF Page Setup */
         @page { 
@@ -99,11 +99,13 @@
     </style>
 </head>
 <body>
+    <!-- Header -->
     <table class="header-table">
         <tr>
             <td style="text-align: center; vertical-align: middle;">
                 <div style="display: inline-block; text-align: left;">
                     <div style="display: inline-block; vertical-align: middle; margin-right: 12px;">
+                        <!-- If public_path fails in DomPDF, swap this back to {{ $logoBase64 }} -->
                         <img src="{{ public_path('images/alf-logo-2022.png') }}" style="height: 50px; display: block;">
                     </div>
                     
@@ -123,52 +125,61 @@
         </tr>
     </table>
 
-    <div class="report-title">{{ $title }}</div>
+    <div class="report-title">OFFICIAL INVENTORY REPORT</div>
 
-    @foreach($transactions->groupBy('ref_no') as $refNo => $items)
-        <div class="transaction-container">
-            <table class="ref-table">
+    <div class="transaction-container">
+        <!-- Info Banner (Adapted from your ref-table) -->
+        <table class="ref-table">
+            <tr>
+                <td width="50%">DATE GENERATED: <span style="color: #551359;">{{ now()->format('F j, Y') }}</span></td>
+            </tr>
+        </table>
+
+        <!-- Main Inventory Data -->
+        <table class="main-table">
+            <thead>
                 <tr>
-                    <td width="50%">REF: <span style="color: #551359;">#{{ $refNo }}</span></td>
-                    <td width="50%" style="text-align: right; color: #551359;">
-                        {{ \Carbon\Carbon::parse($items->first()->date)->format('F Y') }}
-                    </td>
+                    <th width="5%" style="text-align: center;">#</th>
+                    <th width="15%">Product Code</th>
+                    <th width="30%">Item Name</th>
+                    <th width="15%">Category</th>
+                    <th width="10%" style="text-align: center;">Stock</th>
+                    <th width="10%" style="text-align: center;">Min</th>
+                    <th width="5%" style="text-align: center;">Unit</th>
+                    <th width="10%" style="text-align: center;">Status</th>
                 </tr>
-            </table>
-
-            <table class="main-table">
-                <thead>
+            </thead>
+            <tbody>
+                @forelse($items as $item)
+                    @php
+                        $isCritical = $item->quantity <= $item->min_stock;
+                        $status = $isCritical ? 'CRITICAL' : 'HEALTHY';
+                        $statusColor = $isCritical ? '#d9534f' : '#5cb85c'; /* Bootstrap Red/Green */
+                    @endphp
                     <tr>
-                        <th width="5%" style="text-align: center;">#</th>
-                        <th width="8%" style="text-align: center;">Qty</th>
-                        <th width="10%" style="text-align: center;">Unit</th>
-                        <th width="42%">Property / Item Description</th>
-                        <th width="35%">Remarks</th>
+                        <td style="text-align: center; color: #777;">{{ $loop->iteration }}</td>
+                        <td>{{ $item->product_code }}</td>
+                        <td><strong>{{ $item->name }}</strong></td>
+                        <td>{{ $item->category->name ?? 'N/A' }}</td>
+                        <td style="text-align: center; font-weight: bold;">{{ $item->quantity }}</td>
+                        <td style="text-align: center;">{{ $item->min_stock }}</td>
+                        <td style="text-align: center;">{{ $item->unit->name ?? 'N/A' }}</td>
+                        <td style="text-align: center; font-weight: bold; color: {{ $statusColor }};">
+                            {{ $status }}
+                        </td>
                     </tr>
-                </thead>
-                <tbody>
-                    @foreach($items as $trx)
-                        <tr>
-                            <td style="text-align: center; color: #777;">{{ $loop->iteration }}</td>
-                            <td style="text-align: center; font-weight: bold;">{{ $trx->total_quantity }}</td>
-                            <td style="text-align: center;">{{ $trx->item->unit->name ?? 'PCS' }}</td>
-                            <td>
-                                <strong>{{ $trx->item->name }}</strong>
-                            </td>
-                            <td>{{ $trx->combined_remarks }}</td>
-                        </tr>
-                    @endforeach
-                </tbody>
-            </table>
-        </div>
-    @endforeach
+                @empty
+                    <tr>
+                        <td colspan="8" style="text-align: center; padding: 20px; color: #999; font-style: italic;">
+                            No items found in inventory.
+                        </td>
+                    </tr>
+                @endforelse
+            </tbody>
+        </table>
+    </div>
 
-    @if($transactions->isEmpty())
-        <div style="text-align: center; padding: 30px; border: 1px dashed #ccc; text-transform: uppercase; font-size: 9px; color: #999;">
-            No transactions found for the selected criteria.
-        </div>
-    @endif
-
+    <!-- Signatories -->
     <table class="footer-section">
         <tr>
             <td class="sig-box" style="vertical-align: bottom;">
@@ -188,22 +199,17 @@
             <td style="width: 10%;"></td>
 
             <td class="sig-box" style="vertical-align: bottom;">
-                <div class="sig-subtext" style="margin-bottom: 25px;">Received By:</div>
+                <!-- Changed 'Received By' to 'Noted By' to better fit an Inventory Report -->
+                <div class="sig-subtext" style="margin-bottom: 25px;">Noted By:</div>
                 
                 <div style="border-bottom: 1.5px solid #000; padding-bottom: 2px; height: 18px; text-align: center;">
                     <span style="font-weight: bold; text-transform: uppercase; font-size: 10px;">
-                        {!! $received_by_name ?? '&nbsp;' !!}
+                        &nbsp;
                     </span>
-                    @if(isset($received_by_date))
-                        <span style="font-weight: bold; font-size: 10px; margin: 0 4px;">/</span>
-                        <span style="font-weight: bold; font-size: 10px;">
-                            {{ \Carbon\Carbon::parse($received_by_date)->format('m/d/Y') }}
-                        </span>
-                    @endif
                 </div>
                 
                 <div class="sig-subtext" style="margin-top: 5px; font-size: 8px; text-align: center;">
-                    Signature Over Printed Name and Date
+                    (School Head / Property Custodian)
                 </div>
             </td>
         </tr>
