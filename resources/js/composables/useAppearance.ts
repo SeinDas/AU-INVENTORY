@@ -17,7 +17,7 @@ export function updateTheme(value: Appearance): void {
 
     if (value === 'system') {
         const mediaQueryList = window.matchMedia(
-            '(prefers-color-scheme: dark)',
+            '(prefers-color-scheme: light)',
         );
         const systemTheme = mediaQueryList.matches ? 'dark' : 'light';
 
