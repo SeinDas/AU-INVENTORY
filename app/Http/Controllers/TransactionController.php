@@ -236,7 +236,7 @@ class TransactionController extends Controller
         if ($transactions->isEmpty()) return back()->with('error', 'No records found.');
 
         $last = $transactions->last();
-        $pdf = $this->generatePdfReport($transactions, "STOCK ISSUANCE FORM", $last->released_to, $last->date);
+        $pdf = $this->generatePdfReport($transactions, "ITEM ISSUANCE FORM", $last->released_to, $last->date);
         return $pdf->stream("Dept-{$request->department}.pdf");
     }
 
@@ -270,7 +270,7 @@ class TransactionController extends Controller
                 'released_to' => $trx->released_to,
                 'combined_remarks' => "Purpose: " . ($trx->purpose ?? "Standard Issuance")
             ]]);
-            return $this->generatePdfReport($data, "STOCK ISSUANCE FORM", $trx->released_to, $trx->date_released)->stream("Out-{$realId}.pdf");
+            return $this->generatePdfReport($data, "ITEM ISSUANCE FORM", $trx->released_to, $trx->date_released)->stream("Out-{$realId}.pdf");
         }
     }
 }

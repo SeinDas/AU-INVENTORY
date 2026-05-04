@@ -99,31 +99,8 @@
     </style>
 </head>
 <body>
-    <!-- Header -->
-    <table class="header-table">
-        <tr>
-            <td style="text-align: center; vertical-align: middle;">
-                <div style="display: inline-block; text-align: left;">
-                    <div style="display: inline-block; vertical-align: middle; margin-right: 12px;">
-                        <!-- If public_path fails in DomPDF, swap this back to {{ $logoBase64 }} -->
-                        <img src="{{ public_path('images/alf-logo-2022.png') }}" style="height: 50px; display: block;">
-                    </div>
-                    
-                    <div style="display: inline-block; vertical-align: middle; text-align: center;">
-                        <div style="font-size: 16px; font-weight: bold; color: #551359; line-height: 1.1;">
-                            ARELLANO LAW FOUNDATION
-                        </div>
-                        <div style="font-size: 8.5px; color: #333;">
-                            Taft Avenue Corner Menlo Street, Pasay City
-                        </div>
-                        <div style="font-size: 8.5px; color: #333;">
-                            Tel No. 404-3089 to 93
-                        </div>
-                    </div>
-                </div>
-            </td>
-        </tr>
-    </table>
+    <!-- Reusable Header Component -->
+    @include('pdf.pdf-header')
 
     <div class="report-title">OFFICIAL INVENTORY REPORT</div>
 
@@ -176,6 +153,23 @@
                     </tr>
                 @endforelse
             </tbody>
+            @php
+                $rowsPerPage = 40; 
+                $halfPageThreshold = 20; 
+
+                $totalItems = count($items);
+                
+                $itemsOnLastPage = $totalItems % $rowsPerPage;
+                $showNothingFollows = ($totalItems > 0) && ($itemsOnLastPage > 0) && ($itemsOnLastPage <= $halfPageThreshold);
+            @endphp
+
+            @if($showNothingFollows)
+                <tr>
+                    <td colspan="8" style="text-align: center; font-weight: bold; font-style: italic; letter-spacing: 1px; padding: 15px 0; border: none;">
+                        ----- NOTHING FOLLOWS ---
+                    </td>
+                </tr>
+            @endif
         </table>
     </div>
 
