@@ -72,7 +72,7 @@ const chartOptions = {
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-slate-200 pb-6">
             <div>
-                <h1 class="text-2xl font-bold text-slate-900 tracking-tight">Administrative Overview</h1>
+                <h1 class="text-2xl font-bold text-slate-900">Administrative Overview</h1>
                 <p class="text-sm text-slate-500 mt-1 italic">Welcome back, {{ userName }}. Here is the current inventory status.</p>
             </div>
             
