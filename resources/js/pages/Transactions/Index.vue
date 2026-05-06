@@ -251,12 +251,15 @@ const resetFilters = () => {
                     </div>
                 </div>
                 <div class="p-4 bg-slate-50 border-t border-slate-100 flex gap-2">
+                    <!--
                     <a v-if="userRole !== 'viewer'" :href="route('web.transactions.export-pdf', selectedTransaction?.raw_id)" 
                         target="_blank"
                         class="flex-1 py-3 bg-purple-600 hover:bg-purple-700 text-white text-[10px] font-black rounded-xl uppercase  flex items-center justify-center gap-2 transition-all">
                         <Download class="w-4 h-4" /> Download PDF
                     </a>
                     <button @click="closeViewModal" class="px-6 py-3 bg-white border border-slate-200 text-slate-500 text-[10px] font-black rounded-xl uppercase hover:bg-slate-100">Close</button>
+                    -->
+                    
                 </div>
             </div>
         </div>
