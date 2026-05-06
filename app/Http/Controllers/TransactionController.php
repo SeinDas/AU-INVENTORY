@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\{Item, StockIn, StockOut, Department, Category};
+use App\Models\{Item, StockIn, StockOut, Transaction, Department, Category};
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\{DB, Auth};
@@ -15,50 +15,40 @@ class TransactionController extends Controller
      */
     public function index()
     {
-        $stockIn = StockIn::with(['item:id,name,category_id', 'item.category:id,name'])
-            ->select('id', 'ref_no', 'item_id', 'quantity', 'received_by', 'supplier_name', 'date_received', 'created_at')
+        // Query the unified Transaction table
+        $transactions = Transaction::with([
+                'item:id,name,category_id', 
+                'item.category:id,name',
+                'user:id,name' // Assuming you want the user who recorded it
+            ])
             ->latest()
-            ->limit(100)
+            ->limit(200) // Increased limit since we aren't fetching 100 of each separately
             ->get()
             ->map(fn($record) => [
-                'id' => $record->ref_no,
-                'raw_id' => 'in-' . $record->id,
+                // Note: If you added 'ref_no' to your Transaction migration, change $record->id to $record->ref_no
+                'id' => $record->id, 
+                'raw_id' => strtolower($record->type) . '-' . $record->id,
                 'created_at' => $record->created_at,
                 'item' => $record->item,
-                'type' => 'In',
+                'type' => $record->type,
                 'quantity' => $record->quantity,
-                'received_by' => $record->received_by,
-                'recorded_by' => $record->received_by,
-                'released_to' => null,
-                'department' => null,
-                'note' => "Supplier: " . ($record->supplier_name ?? 'N/A'),
+                'recorded_by' => $record->user->name ?? 'System',
+                
+                // Mappings specific to Stock In
+                'received_by' => $record->type === 'In' ? $record->personnel_name : null,
+                
+                // Mappings specific to Stock Out
+                'released_to' => $record->type === 'Out' ? $record->personnel_name : null,
+                'department' => $record->type === 'Out' ? $record->source_destination : null,
+                
+                // Dynamic Note Assignment
+                'note' => $record->type === 'In' 
+                            ? "Supplier: " . ($record->source_destination ?? 'N/A') 
+                            : ($record->note ?? 'Release'),
             ]);
-
-        $stockOut = StockOut::with(['item:id,name,category_id', 'item.category:id,name'])
-            ->select('id', 'ref_no', 'item_id', 'quantity', 'department', 'released_to', 'released_by', 'purpose', 'date_released', 'created_at')
-            ->latest()
-            ->limit(100)
-            ->get()
-            ->map(fn($record) => [
-                'id' => $record->ref_no,
-                'raw_id' => 'out-' . $record->id,
-                'created_at' => $record->created_at,
-                'item' => $record->item,
-                'type' => 'Out',
-                'quantity' => $record->quantity,
-                'department' => $record->department,
-                'released_to' => $record->released_to,
-                'released_by' => $record->released_by,
-                'recorded_by' => $record->released_by,
-                'note' => $record->purpose ?? 'Release',
-            ]);
-
-        $mergedTransactions = $stockIn->concat($stockOut)
-            ->sortByDesc('created_at')
-            ->values();
 
         return Inertia::render('Transactions/Index', [
-            'transactions' => $mergedTransactions,
+            'transactions' => $transactions,
             'departments' => Department::where('is_active', true)->orderBy('name')->get(['id', 'name']),
             'categories' => Category::orderBy('name')->get(['id', 'name']),
         ]);

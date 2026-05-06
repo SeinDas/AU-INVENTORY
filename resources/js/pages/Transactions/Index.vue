@@ -2,11 +2,9 @@
 import { ref, computed } from 'vue';
 import { Link, Head, usePage } from '@inertiajs/vue3'; 
 import AppLayout from '@/layouts/AppLayout.vue';
-import Card from '@/components/ui/card/Card.vue';
 import { 
     History, Download, Eye, PackagePlus, PackageMinus, XCircle, User, Building2, Box, Calendar, Filter, ArrowUpDown
 } from 'lucide-vue-next';
-import { Button } from '@/components/ui/button';
 
 const page = usePage();
 const breadcrumbs = [{ title: "Transactions", href: "#" }];
@@ -49,8 +47,12 @@ const filteredTransactions = computed(() => {
         if (sortBy.value === 'latest' || sortBy.value === 'oldest') {
             const dateA = new Date(a.created_at).getTime();
             const dateB = new Date(b.created_at).getTime();
-            if (dateA !== dateB) return sortBy.value === 'latest' ? dateB - dateA : dateA - dateB;
-            return sortBy.value === 'latest' ? b.raw_id - a.raw_id : a.raw_id - b.raw_id;
+            
+            if (dateA !== dateB) {
+                return sortBy.value === 'latest' ? dateB - dateA : dateA - dateB;
+            }
+            // FIXED: Use numeric `id` for fallback sorting instead of string `raw_id`
+            return sortBy.value === 'latest' ? b.id - a.id : a.id - b.id;
         }
         if (sortBy.value === 'az') return (a.item?.name || '').localeCompare(b.item?.name || '');
         if (sortBy.value === 'za') return (b.item?.name || '').localeCompare(a.item?.name || '');
@@ -161,8 +163,8 @@ const resetFilters = () => {
                                 <span class="block text-[10px] font-mono text-slate-400">{{ trx.item?.product_code }}</span>
                             </td>
                             <td class="py-3 px-4">
-                                <span :class="trx.type === 'In' ? 'text-emerald-600 bg-emerald-50' : 'text-slate-600 bg-slate-50'" class="text-[9px] font-black uppercase px-2 py-0.5 rounded border">
-                                    {{ trx.department || (trx.type === 'In' ? 'INBOUND' : 'GENERAL') }}
+                                <span :class="trx.department ? 'text-emerald-600 bg-emerald-50' : 'text-slate-600 bg-slate-50'" class="text-[9px] font-black uppercase px-2 py-0.5 rounded border">
+                                    {{ trx.department || 'N/A' }}
                                 </span>
                             </td>
                             <td class="py-3 px-4">
@@ -178,9 +180,12 @@ const resetFilters = () => {
                                     <button @click="openViewModal(trx)" class="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg">
                                         <Eye class="w-4 h-4" />
                                     </button>
+
+                                    <!-- Using raw_id ('in-1', 'out-2') for the PDF export route 
                                     <a v-if="userRole !== 'viewer'" :href="route('web.transactions.export-pdf', trx.raw_id)" target="_blank" class="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg">
                                         <Download class="w-4 h-4" />
                                     </a>
+                                    -->
                                 </div>
                             </td>
                         </tr>
@@ -221,7 +226,7 @@ const resetFilters = () => {
 
                     <div class="grid grid-cols-2 gap-6">
                         <div class="space-y-1">
-                            <p class="text-[9px] text-slate-400 font-black uppercase flex items-center gap-1.5"><Building2 class="w-3 h-3" /> Dept</p>
+                            <p class="text-[9px] text-slate-400 font-black uppercase flex items-center gap-1.5"><Building2 class="w-3 h-3" /> Department</p>
                             <p class="text-[11px] font-bold text-slate-700 uppercase">{{ selectedTransaction?.department || 'N/A' }}</p>
                         </div>
                         <div class="space-y-1">
@@ -245,7 +250,6 @@ const resetFilters = () => {
                         <div class="p-3 bg-amber-50 border border-amber-100 rounded-xl text-[11px] text-amber-900 italic">"{{ selectedTransaction.note }}"</div>
                     </div>
                 </div>
-
                 <div class="p-4 bg-slate-50 border-t border-slate-100 flex gap-2">
                     <a v-if="userRole !== 'viewer'" :href="route('web.transactions.export-pdf', selectedTransaction?.raw_id)" 
                         target="_blank"
