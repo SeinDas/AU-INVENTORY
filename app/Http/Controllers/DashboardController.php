@@ -40,7 +40,7 @@ class DashboardController extends Controller
                 'low_stock_count'  => Item::whereRaw('quantity <= min_stock')->count(),
                 'total_categories' => Category::count(),
                 'recent_updates'   => StockIn::whereDate('created_at', today())->count() + 
-                                      StockOut::whereDate('created_at', today())->count(),
+                                    StockOut::whereDate('created_at', today())->count(),
             ],
             'top_stock_items' => Item::orderBy('quantity', 'desc')
                 ->limit(5)

@@ -32,8 +32,8 @@ const submit = () => {
 </script>
 
 <template>
-    <AuthBase title="Log in" description="Enter your credentials">
-        <Head title="Log in" />
+    <AuthBase title="Property Management & Inventory System" description="Enter your username and password below to log in">
+        <Head title="Property Management & Inventory System" />
 
         <div v-if="status" class="mb-4 text-sm font-medium text-green-600">
             {{ status }}
@@ -84,7 +84,7 @@ const submit = () => {
                     Log in
                 </Button>
             </div>
-
+            <!--
             <div
                 class="text-center text-sm text-muted-foreground"
                 v-if="canRegister"
@@ -92,6 +92,8 @@ const submit = () => {
                 Don't have an account?
                 <TextLink :href="route('register')" :tabindex="5">Sign up</TextLink>
             </div>
+            -->
+            
         </form>
     </AuthBase>
 </template>

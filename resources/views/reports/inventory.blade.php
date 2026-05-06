@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>{{ $title }}</title>
+    <title>ALF Inventory Report</title>
     <style>
         /* PDF Page Setup */
         @page { 
@@ -19,7 +19,7 @@
         }
 
         /* Header Section */
-       .header-table { 
+        .header-table { 
             width: 100%; 
             border-bottom: 2px solid #000; 
             padding-bottom: 8px; 
@@ -102,52 +102,78 @@
     <!-- Reusable Header Component -->
     @include('pdf.pdf-header')
 
-    <div class="report-title">{{ $title }}</div>
+    <div class="report-title">OFFICIAL INVENTORY REPORT</div>
 
-    @foreach($transactions->groupBy('ref_no') as $refNo => $items)
-        <div class="transaction-container">
-            <table class="ref-table">
+    <div class="transaction-container">
+        <!-- Info Banner (Adapted from your ref-table) -->
+        <table class="ref-table">
+            <tr>
+                <td width="50%">DATE GENERATED: <span style="color: #551359;">{{ now()->format('F j, Y') }}</span></td>
+            </tr>
+        </table>
+
+        <!-- Main Inventory Data -->
+        <table class="main-table">
+            <thead>
                 <tr>
-                    <td width="50%">REF: <span style="color: #551359;">#{{ $refNo }}</span></td>
-                    <td width="50%" style="text-align: right; color: #551359;">
-                        {{ \Carbon\Carbon::parse($items->first()->date)->format('F Y') }}
+                    <th width="5%" style="text-align: center;">#</th>
+                    <th width="15%">Product Code</th>
+                    <th width="30%">Item Name</th>
+                    <th width="15%">Category</th>
+                    <th width="10%" style="text-align: center;">Stock</th>
+                    <th width="10%" style="text-align: center;">Min</th>
+                    <th width="5%" style="text-align: center;">Unit</th>
+                    <th width="10%" style="text-align: center;">Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                @forelse($items as $item)
+                    @php
+                        $isCritical = $item->quantity <= $item->min_stock;
+                        $status = $isCritical ? 'CRITICAL' : 'HEALTHY';
+                        $statusColor = $isCritical ? '#d9534f' : '#5cb85c'; /* Bootstrap Red/Green */
+                    @endphp
+                    <tr>
+                        <td style="text-align: center; color: #777;">{{ $loop->iteration }}</td>
+                        <td>{{ $item->product_code }}</td>
+                        <td><strong>{{ $item->name }}</strong></td>
+                        <td>{{ $item->category->name ?? 'N/A' }}</td>
+                        <td style="text-align: center; font-weight: bold;">{{ $item->quantity }}</td>
+                        <td style="text-align: center;">{{ $item->min_stock }}</td>
+                        <td style="text-align: center;">{{ $item->unit->name ?? 'N/A' }}</td>
+                        <td style="text-align: center; font-weight: bold; color: {{ $statusColor }};">
+                            {{ $status }}
+                        </td>
+                    </tr>
+                @empty
+                    <tr>
+                        <td colspan="8" style="text-align: center; padding: 20px; color: #999; font-style: italic;">
+                            No items found in inventory.
+                        </td>
+                    </tr>
+                @endforelse
+            </tbody>
+            @php
+                $rowsPerPage = 40; 
+                $halfPageThreshold = 20; 
+
+                $totalItems = count($items);
+                
+                $itemsOnLastPage = $totalItems % $rowsPerPage;
+                $showNothingFollows = ($totalItems > 0) && ($itemsOnLastPage > 0) && ($itemsOnLastPage <= $halfPageThreshold);
+            @endphp
+
+            @if($showNothingFollows)
+                <tr>
+                    <td colspan="8" style="text-align: center; font-weight: bold; font-style: italic; letter-spacing: 1px; padding: 15px 0; border: none;">
+                        ----- NOTHING FOLLOWS ---
                     </td>
                 </tr>
-            </table>
+            @endif
+        </table>
+    </div>
 
-            <table class="main-table">
-                <thead>
-                    <tr>
-                        <th width="5%" style="text-align: center;">#</th>
-                        <th width="8%" style="text-align: center;">Qty</th>
-                        <th width="10%" style="text-align: center;">Unit</th>
-                        <th width="42%">Property / Item Description</th>
-                        <th width="35%">Remarks</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach($items as $trx)
-                        <tr>
-                            <td style="text-align: center; color: #777;">{{ $loop->iteration }}</td>
-                            <td style="text-align: center; font-weight: bold;">{{ $trx->total_quantity }}</td>
-                            <td style="text-align: center;">{{ $trx->item->unit->name ?? 'PCS' }}</td>
-                            <td>
-                                <strong>{{ $trx->item->name }}</strong>
-                            </td>
-                            <td>{{ $trx->combined_remarks }}</td>
-                        </tr>
-                    @endforeach
-                </tbody>
-            </table>
-        </div>
-    @endforeach
-
-    @if($transactions->isEmpty())
-        <div style="text-align: center; padding: 30px; border: 1px dashed #ccc; text-transform: uppercase; font-size: 9px; color: #999;">
-            No transactions found for the selected criteria.
-        </div>
-    @endif
-
+    <!-- Signatories -->
     <table class="footer-section">
         <tr>
             <td class="sig-box" style="vertical-align: bottom;">
@@ -167,22 +193,17 @@
             <td style="width: 10%;"></td>
 
             <td class="sig-box" style="vertical-align: bottom;">
-                <div class="sig-subtext" style="margin-bottom: 25px;">Received By:</div>
+                <!-- Changed 'Received By' to 'Noted By' to better fit an Inventory Report -->
+                <div class="sig-subtext" style="margin-bottom: 25px;">Noted By:</div>
                 
                 <div style="border-bottom: 1.5px solid #000; padding-bottom: 2px; height: 18px; text-align: center;">
                     <span style="font-weight: bold; text-transform: uppercase; font-size: 10px;">
-                        {!! $received_by_name ?? '&nbsp;' !!}
+                        &nbsp;
                     </span>
-                    @if(isset($received_by_date))
-                        <span style="font-weight: bold; font-size: 10px; margin: 0 4px;">/</span>
-                        <span style="font-weight: bold; font-size: 10px;">
-                            {{ \Carbon\Carbon::parse($received_by_date)->format('m/d/Y') }}
-                        </span>
-                    @endif
                 </div>
                 
                 <div class="sig-subtext" style="margin-top: 5px; font-size: 8px; text-align: center;">
-                    Signature Over Printed Name and Date
+                    (School Head / Property Custodian)
                 </div>
             </td>
         </tr>

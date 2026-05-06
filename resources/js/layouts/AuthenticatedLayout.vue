@@ -1,3 +1,4 @@
+<!-- Old Sidebar -->
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'; 
 import { Link, usePage } from '@inertiajs/vue3'; 
@@ -6,6 +7,7 @@ import {
     LogOut, User, ChevronUp, X, CircleCheck, CircleAlert
 } from 'lucide-vue-next';
 import { route } from 'ziggy-js';
+import AppLogo from '@/components/AppLogo.vue';
 
 interface FlashProps { success?: string; error?: string; warning?: string; }
 
@@ -106,8 +108,7 @@ onUnmounted(() => window.removeEventListener('click', closeUserMenu));
         <aside class="hidden md:flex flex-col w-64 bg-purple-900 sticky top-0 h-screen z-20 shadow-2xl border-r border-purple-800">
             <div class="p-6">
                 <div class="flex items-center gap-3 text-white">
-                    <div class="bg-white/10 p-2 rounded-lg"><Package class="w-6 h-6 text-purple-300" /></div>
-                    <span class="font-bold tracking-tight text-xl uppercase">ALF Inventory</span>
+                    <AppLogo />
                 </div>
             </div>
 

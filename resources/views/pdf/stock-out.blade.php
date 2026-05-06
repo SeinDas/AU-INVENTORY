@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Stock Issuance Form</title>
+    <title>Item Issuance Form</title>
     <style>
         
         @page {
@@ -17,9 +17,11 @@
         }
 
         /* HEADER STYLING */
-        .header-table {
-            width: 100%;
-            margin-bottom: 15px;
+        .header-table { 
+            width: 100%; 
+            border-bottom: 2px solid #000; 
+            padding-bottom: 8px; 
+            margin-bottom: 15px; 
         }
         .company-name {
             font-size: 14px;
@@ -88,20 +90,10 @@
         Order OUT-{{ str_replace('out-', '', $transaction->id) }} - Disbursement System
     </div>
 
-    <table class="header-table">
-        <tr>
-            <td width="20%" style="text-align: right; padding-right: 15px;">
-                </td>
-            <td width="60%" style="text-align: center; line-height: 1.2;">
-                <div class="company-name">ARELLANO LAW FOUNDATION</div>
-                <div class="company-address">Taft Ave, Cor. Menlo St. Pasay City</div>
-                <div class="company-address">Tel. No. 404-3089 to 93</div>
-            </td>
-            <td width="20%"></td>
-        </tr>
-    </table>
+    <!-- Reusable Header Component -->
+    @include('pdf.pdf-header')
 
-    <div class="form-title">STOCK ISSUANCE FORM</div>
+    <div class="form-title">ITEM ISSUANCE FORM</div>
 
     <table class="info-table">
         <tr>

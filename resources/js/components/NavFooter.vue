@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { Link } from '@inertiajs/vue3';
 import {
     SidebarGroup,
     SidebarGroupContent,
@@ -6,6 +7,7 @@ import {
     SidebarMenuButton,
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
+import { useCurrentUrl } from '@/composables/useCurrentUrl';
 import { toUrl } from '@/lib/utils';
 import type { NavItem } from '@/types';
 
@@ -15,6 +17,8 @@ type Props = {
 };
 
 defineProps<Props>();
+
+const { isCurrentUrl } = useCurrentUrl();
 </script>
 
 <template>
@@ -27,8 +31,11 @@ defineProps<Props>();
                     <SidebarMenuButton
                         class="text-neutral-600 hover:text-neutral-800 dark:text-neutral-300 dark:hover:text-neutral-100"
                         as-child
+                        :is-active="isCurrentUrl(item.href)"
+                        :tooltip="item.title"
                     >
-                        <a
+                        <a                        
+                            v-if="item.external"
                             :href="toUrl(item.href)"
                             target="_blank"
                             rel="noopener noreferrer"
@@ -36,6 +43,10 @@ defineProps<Props>();
                             <component :is="item.icon" />
                             <span>{{ item.title }}</span>
                         </a>
+                        <Link v-else :href="item.href">
+                            <component :is="item.icon" />
+                            <span>{{ item.title }}</span>
+                        </Link>
                     </SidebarMenuButton>
                 </SidebarMenuItem>
             </SidebarMenu>
