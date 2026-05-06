@@ -120,9 +120,10 @@
                     <tr>
                         <th width="5%" style="text-align: center;">#</th>
                         <th width="8%" style="text-align: center;">Qty</th>
-                        <th width="10%" style="text-align: center;">Unit</th>
-                        <th width="42%">Property / Item Description</th>
-                        <th width="35%">Remarks</th>
+                        <th width="8%" style="text-align: center;">Unit</th>
+                        <th width="16%" style="text-align: center;">Department</th>
+                        <th width="38%">Property / Item Description</th>
+                        <th width="25%">Remarks</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -131,6 +132,10 @@
                             <td style="text-align: center; color: #777;">{{ $loop->iteration }}</td>
                             <td style="text-align: center; font-weight: bold;">{{ $trx->total_quantity }}</td>
                             <td style="text-align: center;">{{ $trx->item->unit->name ?? 'PCS' }}</td>
+                            
+                            <!-- New Department Column Data -->
+                            <td style="text-align: center;">{{ $trx->department ?? 'N/A' }}</td>
+                            
                             <td>
                                 <strong>{{ $trx->item->name }}</strong>
                             </td>

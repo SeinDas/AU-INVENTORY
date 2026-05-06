@@ -32,14 +32,18 @@ const triggerExport = () => {
 
 const resetForm = () => {
     form.reset();
+    form.clearErrors();
+    form.line_items = [{ item_id: '', quantity: 1, unit_cost: 0 }];
     recentlySubmitted.value = false;
 };
 
 const submit = () => {
     form.post(route('web.transactions.store_bulk_in'), {
         onBefore: () => { submittedDate.value = form.date_received; },
-        onSuccess: () => { recentlySubmitted.value = true; 
-            toast.success("Stock in record submitted successfully!"); },
+        onSuccess: () => { 
+            recentlySubmitted.value = true; 
+            toast.success("Stock in record submitted successfully!"); 
+        },
     });
 };
 </script>
@@ -124,7 +128,7 @@ const submit = () => {
             <div class="flex justify-end pt-4">
                 <div v-if="recentlySubmitted" class="flex gap-3">
                     <Button @click="triggerExport" type="button" class="bg-purple-600 hover:bg-purple-700 text-white">
-                        <Download class="w-4 h-4 mr-3" /> Download Inbound PDF
+                        <Download class="w-4 h-4 mr-3" /> Download PDF
                     </Button>
                     <Button @click="resetForm" type="button" class="flex items-center px-8 py-4 bg-white border border-slate-300 text-slate-600 text-[10px] font-bold rounded-sm hover:bg-slate-100 transition-colors uppercase ">
                         <RefreshCw class="w-4 h-4 mr-3" /> New Entry
@@ -132,7 +136,7 @@ const submit = () => {
                 </div>
                 <Button v-else type="submit" :disabled="form.processing" class="bg-purple-600 hover:bg-purple-700 text-white">
                     <Save class="w-4 h-4 mr-3 text-white-400" />
-                    {{ form.processing ? 'Saving...' : 'Save Inbound Entry' }}
+                    {{ form.processing ? 'Saving...' : 'Save Stock Entry' }}
                 </Button>
             </div>
         </form>

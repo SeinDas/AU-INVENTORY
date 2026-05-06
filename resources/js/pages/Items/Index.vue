@@ -1,15 +1,27 @@
 <script setup>
 import { ref, computed } from 'vue';
-import { Link, Head, useForm,router } from '@inertiajs/vue3';
+import { Link, Head, useForm, router } from '@inertiajs/vue3';
 import AppLayout from '@/layouts/AppLayout.vue';
 import Card from '@/components/ui/card/Card.vue';
 import { Plus, AlertTriangle, FileText, Pencil, Trash2, Search } from 'lucide-vue-next';
 import { Button } from '@/components/ui/button';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import { useToast } from 'vue-toastification';
 
 const props = defineProps({
     items: Array
 });
 
+const toast = useToast();
 const breadcrumbs = [{ title: "Inventory Items", href: "#" }];
 
 // Search functionality
@@ -28,17 +40,33 @@ const filteredItems = computed(() => {
     });
 });
 
-// Delete functionality
+// --- Delete Functionality State & Logic ---
 const form = useForm({});
-const deleteItem = (id) => {
-    if (confirm('Are you sure you want to remove this item from the registry?')) {
-        form.delete(route('web.items.destroy', id), {
-            preserveScroll: true,
-            onSuccess: () => {
-                // Optional: add a toast notification here
-            }
-        });
-    }
+const isDeleteDialogOpen = ref(false);
+const itemToDelete = ref(null);
+
+// 1. Triggered when the trash icon is clicked
+const confirmDelete = (id) => {
+    itemToDelete.value = id;
+    isDeleteDialogOpen.value = true;
+};
+
+// 2. Triggered when "Delete Item" is clicked inside the Alert Dialog
+const executeDelete = () => {
+    if (!itemToDelete.value) return;
+
+    form.delete(route('web.items.destroy', itemToDelete.value), {
+        preserveScroll: true,
+        onSuccess: () => {
+            isDeleteDialogOpen.value = false;
+            itemToDelete.value = null;
+            toast.success("Item successfully removed from the registry.");
+        },
+        onError: () => {
+            toast.error("Failed to delete the item. Please try again.");
+            isDeleteDialogOpen.value = false;
+        }
+    });
 };
 
 // Helper function to handle numeric comparison safely
@@ -129,8 +157,8 @@ const isLowStock = (item) => {
                                         <Pencil class="w-4 h-4" />
                                     </Link>
 
-                                    <button v-if="['admin', 'custodian'].includes($page.props.auth.user.role)"
-                                        @click="deleteItem(item.id)"
+                                    <button v-if="['Admin', 'Custodian'].includes($page.props.auth.user.role)"
+                                        @click="confirmDelete(item.id)"
                                         class="text-slate-400 hover:text-red-600 transition-colors">
                                         <Trash2 class="w-4 h-4" />
                                     </button>
@@ -157,8 +185,26 @@ const isLowStock = (item) => {
 
         <div class="flex items-center gap-2 text-[10px] text-slate-400 uppercase font-bold  mt-4">
             <div class="w-1 h-1 bg-slate-300 rounded-full"></div>
-            <span v-if="$page.props.auth.user.role === 'viewer'">Read-Only Audit View</span>
+            <span v-if="$page.props.auth.user.role === 'Viewer'">Read-Only Audit View</span>
             <span v-else>Authorized Registry Management: {{ $page.props.auth.user.role }}</span>
         </div>
+
+        <!-- Alert Dialog Component -->
+        <AlertDialog v-model:open="isDeleteDialogOpen">
+            <AlertDialogContent>
+                <AlertDialogHeader>
+                    <AlertDialogTitle>Delete Item</AlertDialogTitle>
+                    <AlertDialogDescription>
+                        This action cannot be undone. This will permanently delete the item and remove it from our inventory.
+                    </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                    <AlertDialogCancel @click="isDeleteDialogOpen = false">Cancel</AlertDialogCancel>
+                    <AlertDialogAction @click="executeDelete" class="bg-red-600 hover:bg-red-700 text-white focus:ring-red-600">
+                        Delete Item
+                    </AlertDialogAction>
+                </AlertDialogFooter>
+            </AlertDialogContent>
+        </AlertDialog>
     </AppLayout>
 </template>
