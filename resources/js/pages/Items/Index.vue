@@ -5,6 +5,16 @@ import AppLayout from '@/layouts/AppLayout.vue';
 import Card from '@/components/ui/card/Card.vue';
 import { Plus, AlertTriangle, FileText, Pencil, Trash2, Search } from 'lucide-vue-next';
 import { Button } from '@/components/ui/button';
+import { 
+    Table, 
+    TableBody, 
+    TableCaption, 
+    TableCell, 
+    TableHead, 
+    TableRow, 
+    TableHeader,
+    TableFooter
+} from '@/components/ui/table';
 import {
     AlertDialog,
     AlertDialogAction,
@@ -105,52 +115,48 @@ const isLowStock = (item) => {
             </div>
         </div>
 
-        <Card class="bg-white border border-slate-200 rounded-lg shadow-sm p-0 overflow-hidden">
+        <div class="relative rounded-xl border">
             <div class="overflow-x-auto">
-                <table class="w-full text-left">
-                    <thead>
-                        <tr class="bg-slate-50 text-slate-600 text-[11px] font-bold uppercase  border-b border-slate-200">
-                            <th class="py-4 px-6">Product Code</th>
-                            <th class="py-4 px-6">Item Description</th>
-                            <th class="py-4 px-6">Classification</th>
-                            <th class="py-4 px-6 text-center">Current Stock</th>
-                            <th class="py-4 px-6">Unit</th>
-                            <th v-if="$page.props.auth.user.role !== 'viewer'" class="py-4 px-6 text-right">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody class="text-slate-700 text-sm divide-y divide-slate-100">
-                        <tr v-for="item in filteredItems" :key="item.id" class="hover:bg-slate-50/80 transition-colors">
-                            <td class="py-4 px-6 font-mono text-[11px] text-slate-500 uppercase tracking-tighter">
+                <Table>
+                    <TableHeader>
+                        <TableRow class="font-bold uppercase">
+                            <TableHead>Product Code</TableHead>
+                            <TableHead>Item Description</TableHead>
+                            <TableHead>Classification</TableHead>
+                            <TableHead>Current Stock</TableHead>
+                            <TableHead>Unit</TableHead>
+                            <TableHead v-if="$page.props.auth.user.role !== 'viewer'" class=" text-right">Actions</TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody >
+                        <TableRow v-for="item in filteredItems" :key="item.id">
+                            <TableCell>
                                 {{ item.product_code }}
-                            </td>
-                            <td class="py-4 px-6 font-bold text-slate-900">
+                            </TableCell>
+                            <TableCell>
                                 {{ item.name }}
-                            </td>
-                            <td class="py-4 px-6">
-                                <span v-if="item.category"
-                                    class="text-[11px] font-bold text-purple-800 bg-purple-50 border border-purple-100 px-2 py-0.5 rounded-sm uppercase tracking-wide">
+                            </TableCell>
+                            <TableCell >
+                                <span v-if="item.category">
                                     {{ item.category.name }}
                                 </span>
-                                <span v-else class="text-slate-400 italic">Unassigned</span>
-                            </td>
-                            <td class="py-4 px-6">
-                                <div class="flex items-center justify-center gap-2">
+                                <span v-else>Unassigned</span>
+                            </TableCell>
+                            <TableCell >
+                                <div class="flex items-center">
                                     <span
-                                        :class="isLowStock(item) ? 'text-red-700 bg-red-50 border-red-100' : 'text-slate-700 bg-slate-50 border-slate-200'"
-                                        class="font-mono font-bold px-2 py-0.5 border rounded-sm">
+                                        :class="isLowStock(item) ? 'text-red-700' : 'text-slate-700'"
+                                        class=" px-2 py-0.5">
                                         {{ item.quantity }}
                                     </span>
                                     <AlertTriangle v-if="isLowStock(item)" class="w-3.5 h-3.5 text-red-600" />
                                 </div>
-                                <div class="text-center text-[9px] text-slate-400 mt-1" v-if="isLowStock(item)">
-                                    Threshold: {{ item.min_stock }}
-                                </div>
-                            </td>
-                            <td class="py-4 px-6 text-slate-500 font-medium italic text-xs">
+                            </TableCell>
+                            <TableCell>
                                 {{ item.unit?.name || 'unit' }}
-                            </td>
+                            </TableCell>
 
-                            <td v-if="$page.props.auth.user.role !== 'viewer'" class="py-4 px-6 text-right">
+                            <TableCell v-if="$page.props.auth.user.role !== 'viewer'" class=" text-right">
                                 <div class="flex justify-end gap-3">
                                     <Link :href="route('web.items.edit', item.id)"
                                         class="text-slate-400 hover:text-purple-600 transition-colors">
@@ -163,11 +169,11 @@ const isLowStock = (item) => {
                                         <Trash2 class="w-4 h-4" />
                                     </button>
                                 </div>
-                            </td>
-                        </tr>
+                            </TableCell>
+                        </TableRow>
 
-                        <tr v-if="filteredItems.length === 0">
-                            <td colspan="6" class="py-20 text-slate-400">
+                        <TableRow v-if="filteredItems.length === 0">
+                            <TableCell colspan="6" class="py-20 text-slate-400">
                                 <div class="flex flex-col items-center text-center gap-3">
                                     <FileText class="w-10 h-10 text-slate-200" />
                                     <div class="space-y-1">
@@ -176,12 +182,12 @@ const isLowStock = (item) => {
                                         <p class="text-xs italic" v-else>The current inventory registry is empty.</p>
                                     </div>
                                 </div>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+                            </TableCell>
+                        </TableRow>
+                    </TableBody>
+                </Table>
             </div>
-        </Card>
+        </div>
 
         <div class="flex items-center gap-2 text-[10px] text-slate-400 uppercase font-bold  mt-4">
             <div class="w-1 h-1 bg-slate-300 rounded-full"></div>
