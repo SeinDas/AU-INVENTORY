@@ -1,48 +1,107 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <style>
-        @page { size: letter portrait; margin: 30px; }
-        
-        body { font-family: 'Helvetica', sans-serif; font-size: 11px; color: #333; }
-        
-        .header { text-align: center; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 25px; }
-        .school-name { font-size: 20px; font-weight: bold; margin: 0; color: #000; }
-        .address { font-size: 11px; margin: 2px 0; }
-        .report-title { text-align: center; font-size: 13px; font-weight: bold; text-decoration: underline; margin-bottom: 20px; letter-spacing: 1px; }
-        
-        .info-table { width: 100%; margin-bottom: 10px; font-size: 11px; font-weight: bold; border-collapse: collapse;}
-        .items-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; table-layout: fixed; }
-        .items-table th, .items-table td { border: 1px solid #ccc; padding: 6px; text-align: center; word-wrap: break-word; }
-        .items-table th { background-color: #f9f9f9; font-weight: bold; }
-        .items-table td.desc { text-align: left; }
-        
-        .footer { margin-top: 20px; font-size: 10px; text-align: center; border-top: 1px solid #eee; padding-top: 10px; }
-        .ref-no { position: absolute; top: -10px; right: 0; font-size: 9px; }
+        @page {
+            size: letter portrait;
+            margin: 30px;
+        }
+
+        body {
+            font-family: 'Helvetica', sans-serif;
+            font-size: 11px;
+            color: #333;
+        }
+
+        .header-table { 
+            width: 100%; 
+            border-bottom: 2px solid #000; 
+            padding-bottom: 8px; 
+            margin-bottom: 15px; 
+        }
+
+        .school-name {
+            font-size: 20px;
+            font-weight: bold;
+            margin: 0;
+            color: #000;
+        }
+
+        .address {
+            font-size: 11px;
+            margin: 2px 0;
+        }
+
+        .report-title {
+            text-align: center;
+            font-size: 13px;
+            font-weight: bold;
+            text-decoration: underline;
+            margin-bottom: 20px;
+            letter-spacing: 1px;
+        }
+
+        .info-table {
+            width: 100%;
+            margin-bottom: 10px;
+            font-size: 11px;
+            font-weight: bold;
+            border-collapse: collapse;
+        }
+
+        .items-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            table-layout: fixed;
+        }
+
+        .items-table th,
+        .items-table td {
+            border: 1px solid #ccc;
+            padding: 6px;
+            text-align: center;
+            word-wrap: break-word;
+        }
+
+        .items-table th {
+            background-color: #f9f9f9;
+            font-weight: bold;
+        }
+
+        .items-table td.desc {
+            text-align: left;
+        }
+
+        .footer {
+            margin-top: 20px;
+            font-size: 10px;
+            text-align: center;
+            border-top: 1px solid #eee;
+            padding-top: 10px;
+        }
+
+        .ref-no {
+            position: absolute;
+            top: -10px;
+            right: 0;
+            font-size: 9px;
+        }
     </style>
 </head>
 
 <body>
     <div class="ref-no">
-        Order #{{ $transaction->type === 'In' ? 'IN' : 'OUT' }}-{{ str_pad($transaction->id, 5, '0', STR_PAD_LEFT) }} - Disbursement System
+        Order #{{ $transaction->type === 'In' ? 'IN' : 'OUT' }}-{{ str_pad($transaction->id, 5, '0', STR_PAD_LEFT) }} -
+        Disbursement System
     </div>
 
-    <table style="width: 100%; border-bottom: 2px solid #000000; padding-bottom: 5px; margin-bottom: 15px;">
-        <tr>
-            <td style="width: 100px; border: none; vertical-align: middle; padding-left: 10px;">
-                <img src="{{ public_path('images/AUSL_logo.png') }}" style="width: 70px; height: 70px;">
-            </td>
-            <td style="border: none; vertical-align: middle; text-align: center;">
-                <p style="font-size: 18px; font-weight: bold; margin: 0; color: #551359;">ARELLANO LAW FOUNDATION</p>
-                <p style="font-size: 11px; margin: 2px 0;">Taft Avenue Corner Menlo Street, Pasay City, Metro Manila</p>
-                <p style="font-size: 11px; margin: 0; font-weight: bold;">Tel.No.404-3089 to 93</p>
-            </td>
-            <td style="width: 100px; border: none;"></td>
-        </tr>
-    </table>
+    <!-- Reusable Header Component -->
+    @include('pdf.pdf-header')
 
     <div class="report-title">
-        {{ $transaction->type === 'In' ? 'STOCK-IN REPORT' : 'STOCK ISSUANCE FORM' }}
+        {{ $transaction->type === 'In' ? 'STOCK-IN REPORT' : 'ITEM ISSUANCE FORM' }}
     </div>
 
     <table class="info-table">
@@ -88,12 +147,14 @@
             @if($transaction->type === 'In')
                 {{-- STOCK IN: Received By Lang --}}
                 <td style="text-align: left; width: 100%;">
-                    Received By : <span style="text-decoration: underline;">{{ $transaction->received_by ?? 'Property Custodian' }}</span>
+                    Received By : <span
+                        style="text-decoration: underline;">{{ $transaction->received_by ?? 'Property Custodian' }}</span>
                 </td>
             @else
                 {{-- STOCK OUT: Prepared at Received --}}
                 <td style="text-align: left; width: 50%;">
-                    Prepared By : <span style="text-decoration: underline;">{{ $transaction->released_by ?? 'Property Custodian' }}</span>
+                    Prepared By : <span
+                        style="text-decoration: underline;">{{ $transaction->released_by ?? 'Property Custodian' }}</span>
                 </td>
                 <td style="text-align: right; width: 50%;">
                     Received By : _______________________
@@ -106,4 +167,5 @@
         Generated on: {{ date('Y-m-d H:i:s') }} | Official AU System Record
     </div>
 </body>
+
 </html>

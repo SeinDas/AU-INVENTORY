@@ -18,6 +18,27 @@ class ItemController extends Controller
         return response()->json($items);
     }
 
+    public function productCode(Request $request)
+    {
+        $items = Item::get([
+            'id', 
+            'product_code', 
+            'name',
+            'quantity',
+        ]);
+        return response()->json($items);
+    }
+
+    public function singleProductCode($id)
+    {
+        $item = Item::select([
+            'id', 
+            'quantity',
+        ])->findOrFail($id);
+
+        return response()->json($item);
+    }
+
     public function show(Item $item)
     {
         Gate::authorize('view-inventory');

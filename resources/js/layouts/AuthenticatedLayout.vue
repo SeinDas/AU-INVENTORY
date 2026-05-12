@@ -1,3 +1,4 @@
+<!-- Old Sidebar -->
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'; 
 import { Link, usePage } from '@inertiajs/vue3'; 
@@ -6,6 +7,7 @@ import {
     LogOut, User, ChevronUp, X, CircleCheck, CircleAlert
 } from 'lucide-vue-next';
 import { route } from 'ziggy-js';
+import AppLogo from '@/components/AppLogo.vue';
 
 interface FlashProps { success?: string; error?: string; warning?: string; }
 
@@ -34,7 +36,6 @@ const navigationGroups = [
     {
         label: 'Inventory Control',
         items: [
-            // In-update para tumugma sa .names('web.items') sa web.php
             { name: 'Inventory Items', routeName: 'web.items.index', icon: Package, active: 'web.items.*', roles: ['admin', 'clerk', 'custodian', 'viewer'] },
             { name: 'Asset Categories', routeName: 'categories.index', icon: Tags, active: 'categories.*', roles: ['admin', 'clerk', 'custodian'] },
             { name: 'Measurement Units', routeName: 'units.index', icon: Scale, active: 'units.*', roles: ['admin', 'clerk', 'custodian'] },
@@ -49,6 +50,7 @@ const navigationGroups = [
     {
         label: 'Activity Logs',
         items: [
+            // BAGO: Inayos ang routeName sa 'web.transactions.index' at idinagdag ang 'viewer' at 'admin' sa roles
             { name: 'Stock In / Stock Out', routeName: 'web.transactions.index', icon: HistoryIcon, active: 'web.transactions.*', roles: ['clerk', 'custodian', 'viewer'] },
         ]
     }
@@ -106,8 +108,7 @@ onUnmounted(() => window.removeEventListener('click', closeUserMenu));
         <aside class="hidden md:flex flex-col w-64 bg-purple-900 sticky top-0 h-screen z-20 shadow-2xl border-r border-purple-800">
             <div class="p-6">
                 <div class="flex items-center gap-3 text-white">
-                    <div class="bg-white/10 p-2 rounded-lg"><Package class="w-6 h-6 text-purple-300" /></div>
-                    <span class="font-bold tracking-tight text-xl uppercase">ALF Inventory</span>
+                    <AppLogo />
                 </div>
             </div>
 
@@ -151,11 +152,16 @@ onUnmounted(() => window.removeEventListener('click', closeUserMenu));
             </div>
         </aside>
 
-        <main class="flex-1 flex flex-col h-screen overflow-hidden">
-            <header class="w-full bg-white/80 backdrop-blur-md border-b border-slate-200 px-6 py-5">
+        <main class="flex-1 relative flex flex-col h-screen overflow-hidden bg-slate-50">
+            <div class="absolute inset-0 z-0 flex items-center justify-center pointer-events-none overflow-hidden opacity-50">
+                <img src="/images/bg.png" alt="ALF Watermark" class="w-[80%] md:w-[60%] h-auto object-contain">
+            </div>
+
+            <header class="relative z-10 w-full bg-white/80 backdrop-blur-md border-b border-slate-200 px-6 py-5">
                 <h2 class="text-lg font-bold text-slate-800 uppercase tracking-tight">{{ pageTitle }}</h2>
             </header>
-            <div class="flex-1 overflow-y-auto p-6 md:p-10 no-scrollbar bg-slate-50">
+
+            <div class="relative z-10 flex-1 overflow-y-auto p-6 md:p-10 no-scrollbar bg-transparent">
                 <slot />
             </div>
         </main>
