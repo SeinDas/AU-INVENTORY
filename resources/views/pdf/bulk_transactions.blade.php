@@ -19,7 +19,7 @@
         }
 
         /* Header Section */
-        .header-table { 
+       .header-table { 
             width: 100%; 
             border-bottom: 2px solid #000; 
             padding-bottom: 8px; 
@@ -99,29 +99,8 @@
     </style>
 </head>
 <body>
-    <table class="header-table">
-        <tr>
-            <td style="text-align: center; vertical-align: middle;">
-                <div style="display: inline-block; text-align: left;">
-                    <div style="display: inline-block; vertical-align: middle; margin-right: 12px;">
-                        <img src="{{ public_path('images/ALF Logo 2022.png') }}" style="height: 50px; display: block;">
-                    </div>
-                    
-                    <div style="display: inline-block; vertical-align: middle; text-align: center;">
-                        <div style="font-size: 16px; font-weight: bold; color: #551359; line-height: 1.1;">
-                            ARELLANO LAW FOUNDATION
-                        </div>
-                        <div style="font-size: 8.5px; color: #333;">
-                            Taft Avenue Corner Menlo Street, Pasay City
-                        </div>
-                        <div style="font-size: 8.5px; color: #333;">
-                            Tel No. 404-3089 to 93 | www.arellanolawfoundation.com
-                        </div>
-                    </div>
-                </div>
-            </td>
-        </tr>
-    </table>
+    <!-- Reusable Header Component -->
+    @include('pdf.pdf-header')
 
     <div class="report-title">{{ $title }}</div>
 
@@ -131,7 +110,7 @@
                 <tr>
                     <td width="50%">REF: <span style="color: #551359;">#{{ $refNo }}</span></td>
                     <td width="50%" style="text-align: right; color: #551359;">
-                        {{ \Carbon\Carbon::parse($items->first()->date)->format('F d, Y') }}
+                        {{ \Carbon\Carbon::parse($items->first()->date)->format('F Y') }}
                     </td>
                 </tr>
             </table>
@@ -141,9 +120,10 @@
                     <tr>
                         <th width="5%" style="text-align: center;">#</th>
                         <th width="8%" style="text-align: center;">Qty</th>
-                        <th width="10%" style="text-align: center;">Unit</th>
-                        <th width="42%">Property / Item Description</th>
-                        <th width="35%">Remarks</th>
+                        <th width="8%" style="text-align: center;">Unit</th>
+                        <th width="16%" style="text-align: center;">Department</th>
+                        <th width="38%">Property / Item Description</th>
+                        <th width="25%">Remarks</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -152,6 +132,10 @@
                             <td style="text-align: center; color: #777;">{{ $loop->iteration }}</td>
                             <td style="text-align: center; font-weight: bold;">{{ $trx->total_quantity }}</td>
                             <td style="text-align: center;">{{ $trx->item->unit->name ?? 'PCS' }}</td>
+                            
+                            <!-- New Department Column Data -->
+                            <td style="text-align: center;">{{ $trx->department ?? 'N/A' }}</td>
+                            
                             <td>
                                 <strong>{{ $trx->item->name }}</strong>
                             </td>
@@ -171,39 +155,38 @@
 
     <table class="footer-section">
         <tr>
-            <td class="sig-box">
+            <td class="sig-box" style="vertical-align: bottom;">
                 <div class="sig-subtext" style="margin-bottom: 25px;">Prepared By:</div>
                 
-                <div style="border-bottom: 1.5px solid #000; padding-bottom: 2px;">
+                <div style="border-bottom: 1.5px solid #000; padding-bottom: 2px; height: 18px; text-align: center;">
                     <span style="font-weight: bold; text-transform: uppercase; font-size: 10px;">
                         {{ auth()->user()->name ?? 'INVENTORY CUSTODIAN' }}
                     </span>
                 </div>
                 
-                <div class="sig-subtext" style="margin-top: 5px; font-size: 8px;">
+                <div class="sig-subtext" style="margin-top: 5px; font-size: 8px; text-align: center;">
                     Property Office Representative
                 </div>
             </td>
 
             <td style="width: 10%;"></td>
 
-            <td class="sig-box">
+            <td class="sig-box" style="vertical-align: bottom;">
                 <div class="sig-subtext" style="margin-bottom: 25px;">Received By:</div>
                 
-                <div style="border-bottom: 1.5px solid #000; padding-bottom: 2px;">
+                <div style="border-bottom: 1.5px solid #000; padding-bottom: 2px; height: 18px; text-align: center;">
                     <span style="font-weight: bold; text-transform: uppercase; font-size: 10px;">
-                        {{ $received_by_name ?? '__________________________' }}
+                        {!! $received_by_name ?? '&nbsp;' !!}
                     </span>
-                    <span style="font-size: 9px; font-weight: normal;">
-                        @isset($received_by_date)
+                    @if(isset($received_by_date))
+                        <span style="font-weight: bold; font-size: 10px; margin: 0 4px;">/</span>
+                        <span style="font-weight: bold; font-size: 10px;">
                             {{ \Carbon\Carbon::parse($received_by_date)->format('m/d/Y') }}
-                        @else
-                            DATE: _________
-                        @endisset
-                    </span>
+                        </span>
+                    @endif
                 </div>
                 
-                <div class="sig-subtext" style="margin-top: 5px; font-size: 8px;">
+                <div class="sig-subtext" style="margin-top: 5px; font-size: 8px; text-align: center;">
                     Signature Over Printed Name and Date
                 </div>
             </td>

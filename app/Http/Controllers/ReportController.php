@@ -5,62 +5,57 @@ namespace App\Http\Controllers;
 use App\Models\Item;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\StreamedResponse;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class ReportController extends Controller
 {
-    public function download(): StreamedResponse
+    /**
+     * Generate and download the inventory report.
+     * If the request wants JSON, it returns the raw data instead of a file.
+     */
+    public function download(Request $request)
     {
-        // Filename with timestamp
-        $fileName = 'School_Inventory_Report_' . date('Y-m-d_His') . '.csv';
-        
-        // Eager load relationships to prevent N+1 performance issues
         $items = Item::with(['category', 'unit'])->get();
 
-        $headers = [
-            "Content-type"        => "text/csv",
-            "Content-Disposition" => "attachment; filename=$fileName",
-            "Pragma"              => "no-cache",
-            "Cache-Control"       => "must-revalidate, post-check=0, pre-check=0",
-            "Expires"             => "0"
-        ];
+        // API Support: If the client just wants the data in JSON format
+        if ($request->wantsJson()) {
+            return response()->json([
+                'report_name' => 'ALF Inventory Report',
+                'generated_at' => date('Y-m-d'),
+                'data' => $items->map(function($item) {
+                    return [
+                        'product_code' => $item->product_code,
+                        'name' => $item->name,
+                        'category' => $item->category->name ?? 'N/A',
+                        'quantity' => $item->quantity,
+                        'min_stock' => $item->min_stock,
+                        'unit' => $item->unit->name ?? 'N/A',
+                        'status' => ($item->quantity <= $item->min_stock) ? 'CRITICAL' : 'HEALTHY'
+                    ];
+                })
+            ]);
+        }
 
-        $callback = function() use($items) {
-            $file = fopen('php://output', 'w');
-            
-            // --- REPORT HEADER ---
-            fputcsv($file, ['SCHOOL INVENTORY REPORT']);
-            fputcsv($file, ['Date Generated:', date('M d, Y h:i A')]);
-            fputcsv($file, []); 
-            
-            // --- COLUMN HEADERS ---
-            fputcsv($file, ['Product Code', 'Item Name', 'Category', 'Current Stock', 'Min Stock', 'Unit', 'Status']);
+        // Default: Web behavior (PDF Download)
+        $fileName = 'ALF_Inventory_Report_' . date('Y-m-d') . '.pdf';
 
-            // --- DATA ROWS ---
-            foreach ($items as $item) {
-                // Use the dynamic min_stock from your migration
-                $status = ($item->quantity <= $item->min_stock) ? 'CRITICAL (Low Stock)' : 'HEALTHY';
-                
-                fputcsv($file, [
-                    $item->product_code,
-                    $item->name,
-                    $item->category->name ?? 'N/A',
-                    $item->quantity,
-                    $item->min_stock,
-                    $item->unit->name ?? 'N/A',
-                    $status
-                ]);
-            }
+        // Convert the logo to Base64 so DomPDF can easily render it
+        $logoPath = public_path('images/alf-logo-2022.png');
+        $logoBase64 = '';
+        if (file_exists($logoPath)) {
+            $logoData = file_get_contents($logoPath);
+            $logoBase64 = 'data:image/png;base64,' . base64_encode($logoData);
+        }
 
-            // --- SIGNATORY FOOTER ---
-            fputcsv($file, []); 
-            fputcsv($file, []); 
-            fputcsv($file, ['Prepared By:', '____________________']);
-            fputcsv($file, ['Date Signed:', '____________________']);
-            fputcsv($file, ['Noted By:', '____________________', '(School Head / Property Custodian)']);
+        // Load the Blade view and pass the items and logo
+        $pdf = Pdf::loadView('reports.inventory', [
+            'items' => $items,
+            'logoBase64' => $logoBase64
+        ]);
 
-            fclose($file);
-        };
+        // Optional: Set paper to Landscape if table has many columns
+        // $pdf->setPaper('A4', 'landscape');
 
-        return response()->stream($callback, 200, $headers);
+        return $pdf->download($fileName);
     }
 }

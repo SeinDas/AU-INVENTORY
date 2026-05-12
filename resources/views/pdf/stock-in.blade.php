@@ -1,18 +1,60 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <title>Stock In Report</title>
     <style>
-        body { font-family: Arial, sans-serif; font-size: 14px; }
-        .header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #28a745; padding-bottom: 10px; }
-        .title { font-size: 20px; font-weight: bold; color: #28a745; margin-bottom: 5px; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
-        th { background-color: #f4f4f4; width: 35%; }
-        .footer { margin-top: 50px; }
-        .sign-box { width: 200px; border-top: 1px solid #000; text-align: center; margin-top: 50px; padding-top: 5px; }
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+        }
+
+        .header-table { 
+            width: 100%; 
+            border-bottom: 2px solid #000; 
+            padding-bottom: 8px; 
+            margin-bottom: 15px; 
+        }
+
+        .title {
+            font-size: 20px;
+            font-weight: bold;
+            color: #28a745;
+            margin-bottom: 5px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th,
+        td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f4f4f4;
+            width: 35%;
+        }
+
+        .footer {
+            margin-top: 50px;
+        }
+
+        .sign-box {
+            width: 200px;
+            border-top: 1px solid #000;
+            text-align: center;
+            margin-top: 50px;
+            padding-top: 5px;
+        }
     </style>
 </head>
+
 <body>
 
     <div class="header">
@@ -49,4 +91,5 @@
     </div>
 
 </body>
+
 </html>

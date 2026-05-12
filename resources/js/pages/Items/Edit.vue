@@ -1,21 +1,22 @@
 <script setup lang="ts">
 import { Head, useForm, Link } from '@inertiajs/vue3';
-// Fixed casing for layouts folder to resolve TS error
-import AuthenticatedLayout from '@/layouts/AuthenticatedLayout.vue';
+import AppLayout from '@/layouts/AppLayout.vue';
 import InputError from '@/components/InputError.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { 
-    Select, 
+    Select,
     SelectContent, 
     SelectItem, 
     SelectTrigger, 
     SelectValue 
 } from '@/components/ui/select';
 import { Save, ArrowLeft } from 'lucide-vue-next';
+import { useToast } from 'vue-toastification';
 import { route } from 'ziggy-js';
 
+const toast = useToast();
 const props = defineProps<{
     item: {
         id: number;
@@ -40,18 +41,25 @@ const form = useForm({
 });
 
 const submit = () => {
-    form.put(route('items.update', props.item.id));
+    form.put(route('web.items.update', props.item.id), {
+        preserveScroll: true,
+        onSuccess: () => {
+            toast.success("Item updated successfully!");
+        },
+        onError: () => {
+            toast.error("Please check the form for errors.");
+        }
+    });
 };
 </script>
 
 <template>
     <Head :title="`Edit ${item.name}`" />
 
-    <AuthenticatedLayout>
-        <div class="space-y-6">
+    <AppLayout :breadcrumbs="[{ title: 'Inventory Items', href: route('web.items.index') }, { title: item.product_code, href: route('web.items.show', item.id) }]" >
             <div class="flex items-center justify-between">
                 <div class="flex items-center gap-4">
-                    <Link :href="route('items.index')" class="p-2 hover:bg-slate-200 rounded-full transition-colors">
+                    <Link :href="route('web.items.index')" class="p-2 hover:bg-slate-200 rounded-full transition-colors">
                         <ArrowLeft class="w-5 h-5 text-slate-600" />
                     </Link>
                     <div>
@@ -144,7 +152,7 @@ const submit = () => {
 
                     <div class="flex items-center justify-end gap-3 pt-6 border-t border-slate-100">
                         <Link 
-                            :href="route('items.index')"
+                            :href="route('web.items.index')"
                             class="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-950 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-slate-200 bg-white hover:bg-slate-100 hover:text-slate-900 h-10 px-4 py-2"
                         >
                             Cancel
@@ -160,6 +168,5 @@ const submit = () => {
                     </div>
                 </form>
             </div>
-        </div>
-    </AuthenticatedLayout>
+    </AppLayout>
 </template>
