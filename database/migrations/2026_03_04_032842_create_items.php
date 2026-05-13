@@ -18,6 +18,9 @@ return new class extends Migration
             // product_code VARCHAR(100) UNIQUE NOT NULL
             $table->string('product_code', 100)->unique();
 
+            // serial_number VARCHAR(100) DEFAULT 0
+            $table->string('serial_no', 100)->default('0');
+
             // name VARCHAR(255) NOT NULL
             $table->string('name'); 
 

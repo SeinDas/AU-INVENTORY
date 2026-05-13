@@ -24,7 +24,8 @@ class CategoryController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'name' => 'required|max:100|unique:categories,name'
+            'name' => 'required|max:100', 
+            'parent_id' => 'nullable|exists:categories,id'
         ]);
 
         $category = Category::create($validated);

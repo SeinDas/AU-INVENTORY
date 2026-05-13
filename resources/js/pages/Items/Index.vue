@@ -24,7 +24,6 @@ const props = defineProps({
 const toast = useToast();
 const breadcrumbs = [{ title: "Inventory Items", href: "#" }];
 
-// Search functionality
 const searchQuery = ref('');
 
 const filteredItems = computed(() => {
@@ -35,23 +34,21 @@ const filteredItems = computed(() => {
         return (
             item.name?.toLowerCase().includes(query) ||
             item.product_code?.toLowerCase().includes(query) ||
+            item.serial_no?.toLowerCase().includes(query) ||
             item.category?.name?.toLowerCase().includes(query)
         );
     });
 });
 
-// --- Delete Functionality State & Logic ---
 const form = useForm({});
 const isDeleteDialogOpen = ref(false);
 const itemToDelete = ref(null);
 
-// 1. Triggered when the trash icon is clicked
 const confirmDelete = (id) => {
     itemToDelete.value = id;
     isDeleteDialogOpen.value = true;
 };
 
-// 2. Triggered when "Delete Item" is clicked inside the Alert Dialog
 const executeDelete = () => {
     if (!itemToDelete.value) return;
 
@@ -69,7 +66,6 @@ const executeDelete = () => {
     });
 };
 
-// Helper function to handle numeric comparison safely
 const isLowStock = (item) => {
     const qty = Number(item.quantity);
     const min = Number(item.min_stock);
@@ -109,8 +105,9 @@ const isLowStock = (item) => {
             <div class="overflow-x-auto">
                 <table class="w-full text-left">
                     <thead>
-                        <tr class="bg-slate-50 text-slate-600 text-[11px] font-bold uppercase  border-b border-slate-200">
+                        <tr class="bg-slate-50 text-slate-600 text-[11px] font-bold uppercase border-b border-slate-200">
                             <th class="py-4 px-6">Product Code</th>
+                            <th class="py-4 px-6">Serial No.</th>
                             <th class="py-4 px-6">Item Description</th>
                             <th class="py-4 px-6">Classification</th>
                             <th class="py-4 px-6 text-center">Current Stock</th>
@@ -122,6 +119,9 @@ const isLowStock = (item) => {
                         <tr v-for="item in filteredItems" :key="item.id" class="hover:bg-slate-50/80 transition-colors">
                             <td class="py-4 px-6 font-mono text-[11px] text-slate-500 uppercase tracking-tighter">
                                 {{ item.product_code }}
+                            </td>
+                            <td class="py-4 px-6 font-mono text-[11px] text-slate-400">
+                                {{ item.serial_no || '0' }}
                             </td>
                             <td class="py-4 px-6 font-bold text-slate-900">
                                 {{ item.name }}
@@ -167,7 +167,7 @@ const isLowStock = (item) => {
                         </tr>
 
                         <tr v-if="filteredItems.length === 0">
-                            <td colspan="6" class="py-20 text-slate-400">
+                            <td colspan="7" class="py-20 text-slate-400">
                                 <div class="flex flex-col items-center text-center gap-3">
                                     <FileText class="w-10 h-10 text-slate-200" />
                                     <div class="space-y-1">
@@ -183,13 +183,12 @@ const isLowStock = (item) => {
             </div>
         </Card>
 
-        <div class="flex items-center gap-2 text-[10px] text-slate-400 uppercase font-bold  mt-4">
+        <div class="flex items-center gap-2 text-[10px] text-slate-400 uppercase font-bold mt-4">
             <div class="w-1 h-1 bg-slate-300 rounded-full"></div>
             <span v-if="$page.props.auth.user.role === 'Viewer'">Read-Only Audit View</span>
             <span v-else>Authorized Registry Management: {{ $page.props.auth.user.role }}</span>
         </div>
 
-        <!-- Alert Dialog Component -->
         <AlertDialog v-model:open="isDeleteDialogOpen">
             <AlertDialogContent>
                 <AlertDialogHeader>
