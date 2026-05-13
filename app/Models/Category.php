@@ -15,14 +15,23 @@ class Category extends Model
      *
      * @var array<int, string>
      */
-    protected $fillable = ['name'];
+    protected $fillable = ['name', 'parent_id'];
 
+    public function parent()
+    {
+        return $this->belongsTo(Category::class, 'parent_id');
+    }
+
+    public function children()
+    {
+        return $this->hasMany(Category::class, 'parent_id');
+    }
     /**
      * Get the items for the category.
      * This defines the relationship to your Items table.
      */
-    public function items(): HasMany
+    public function items()
     {
-        return $this->hasMany(Item::class);
+        return $this->belongsToMany(Item::class, 'category_item');
     }
 }
