@@ -32,6 +32,7 @@ const editForm = useForm({ name: '' });
 
 const isDeleteDialogOpen = ref(false);
 const categoryToDelete = ref(null);
+const activeTab = ref('main');
 
 // Fixes the 'map' error by ensuring categoryItems exists before mapping
 const subIds = computed(() => {
@@ -94,6 +95,8 @@ const updateCategory = (id) => {
 const executeDelete = () => {
     if (categoryToDelete.value) {
         mainForm.delete(route('categories.destroy', categoryToDelete.value), {
+            preserveScroll: true,
+            only: ['categories', 'flash'], // <-- Partial reload (dinagdag ang flash para sa error messages)
             onSuccess: () => {
                 isDeleteDialogOpen.value = false;
                 toast.success("Deleted!");
@@ -113,6 +116,26 @@ const executeDelete = () => {
             <FolderTree class="w-8 h-8 text-slate-300" />
         </div>
 
+        <!-- START: CENTERED TABS -->
+            <div class="flex justify-center w-full mb-5">
+                <div class="inline-flex p-1 space-x-1 bg-slate-50 border border-slate-200 rounded-lg shadow-sm">
+                    <button
+                        @click="activeTab = 'main'"
+                        :class="activeTab === 'main' ? 'bg-white shadow-sm text-slate-700' : 'text-slate-500 hover:text-slate-700'"
+                        class="px-6 py-1.5 text-[11px] font-semibold uppercase tracking-wider rounded-md transition-all duration-200 flex items-center justify-center gap-2"
+                    >
+                        <Tag class="w-3.5 h-3.5" :class="activeTab === 'main' ? 'text-slate-600' : 'text-slate-400'" /> MAIN
+                    </button>
+                    <button
+                        @click="activeTab = 'sub'"
+                        :class="activeTab === 'sub' ? 'bg-white shadow-sm text-amber-600' : 'text-slate-500 hover:text-slate-700'"
+                        class="px-6 py-1.5 text-[11px] font-semibold uppercase tracking-wider rounded-md transition-all duration-200 flex items-center justify-center gap-2"
+                    >
+                        <GitBranch class="w-3.5 h-3.5" :class="activeTab === 'sub' ? 'text-amber-500' : 'text-slate-400'" /> SUB-CATEGORY
+                    </button>
+                </div>
+            </div>
+        <!-- END: CENTERED TABS -->
         <div class="grid grid-cols-1 md:grid-cols-12 gap-6">
             <div class="md:col-span-4 space-y-6">
                 <div class="bg-white border border-slate-200 shadow-sm rounded-lg p-5">
