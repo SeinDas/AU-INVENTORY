@@ -4,7 +4,6 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Item extends Model
 {
@@ -15,12 +14,13 @@ class Item extends Model
         'quantity', 
         'min_stock', 
         'unit_id', 
+        'category_items_id', 
         'description'
     ];
 
-    public function category(): BelongsToMany
+    public function categoryItem(): BelongsTo
     {
-        return $this->belongsToMany(Category::class, 'category_item');
+        return $this->belongsTo(CategoryItem::class, 'category_items_id');
     }
 
     public function unit(): BelongsTo

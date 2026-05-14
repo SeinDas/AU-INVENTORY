@@ -35,11 +35,13 @@ const filteredItems = computed(() => {
             item.name?.toLowerCase().includes(query) ||
             item.product_code?.toLowerCase().includes(query) ||
             item.serial_no?.toLowerCase().includes(query) ||
-            item.category?.name?.toLowerCase().includes(query)
+            item.category_item?.sub_category?.name?.toLowerCase().includes(query) ||
+            item.category_item?.main_category?.name?.toLowerCase().includes(query)
         );
     });
 });
 
+// --- Delete Functionality State & Logic ---
 const form = useForm({});
 const isDeleteDialogOpen = ref(false);
 const itemToDelete = ref(null);
@@ -127,9 +129,9 @@ const isLowStock = (item) => {
                                 {{ item.name }}
                             </td>
                             <td class="py-4 px-6">
-                                <span v-if="item.category"
+                                <span v-if="item.category_item"
                                     class="text-[11px] font-bold text-purple-800 bg-purple-50 border border-purple-100 px-2 py-0.5 rounded-sm uppercase tracking-wide">
-                                    {{ item.category.name }}
+                                    {{ item.category_item.sub_category?.name || item.category_item.main_category?.name }}
                                 </span>
                                 <span v-else class="text-slate-400 italic">Unassigned</span>
                             </td>
@@ -185,7 +187,7 @@ const isLowStock = (item) => {
 
         <div class="flex items-center gap-2 text-[10px] text-slate-400 uppercase font-bold mt-4">
             <div class="w-1 h-1 bg-slate-300 rounded-full"></div>
-            <span v-if="$page.props.auth.user.role === 'Viewer'">Read-Only Audit View</span>
+            <span v-if="$page.props.auth.user.role === 'viewer'">Read-Only Audit View</span>
             <span v-else>Authorized Registry Management: {{ $page.props.auth.user.role }}</span>
         </div>
 
