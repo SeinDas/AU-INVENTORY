@@ -37,24 +37,36 @@ const editForm = useForm({
 
 const isDeleteDialogOpen = ref(false);
 const categoryToDelete = ref(null);
+const activeTab = ref('main');
 
-const orderedCategories = computed(() => {
-    const main = props.categories.filter(c => !c.parent_id);
-    const result = [];
-    
-    main.forEach(parent => {
-        result.push({ ...parent, isChild: false });
-        const children = props.categories.filter(c => Number(c.parent_id) === Number(parent.id));
-        children.forEach(child => {
-            result.push({ ...child, isChild: true });
-        });
-    });
-    
-    return result.length > 0 ? result : props.categories;
+// Updated para sa Main Indicator at Sub Indicator
+const displayedCategories = computed(() => {
+    if (activeTab.value === 'main') {
+        return props.categories
+            .filter(c => !c.parent_id)
+            .map(c => {
+                // Binibilang kung ilang sub-category meron ang main category na 'to
+                const childCount = props.categories.filter(child => Number(child.parent_id) === Number(c.id)).length;
+                return { ...c, isChild: false, childCount };
+            });
+    } else {
+        return props.categories
+            .filter(c => c.parent_id)
+            .map(c => {
+                const parent = props.categories.find(p => Number(p.id) === Number(c.parent_id));
+                return { 
+                    ...c, 
+                    isChild: true, 
+                    parentName: parent ? parent.name : 'Unknown Parent' 
+                };
+            });
+    }
 });
 
 const submitMain = () => {
     mainForm.post(route('categories.store'), {
+        preserveScroll: true,
+        only: ['categories'], // <-- Ito yung partial reload!
         onSuccess: () => {
             mainForm.reset();
             toast.success("Main category added!");
@@ -64,6 +76,8 @@ const submitMain = () => {
 
 const submitSub = () => {
     subForm.post(route('categories.store'), {
+        preserveScroll: true,
+        only: ['categories'], // <-- Ito yung partial reload!
         onSuccess: () => {
             subForm.reset();
             toast.success("Sub-category added!");
@@ -84,6 +98,8 @@ const cancelEdit = () => {
 
 const updateCategory = (id) => {
     editForm.put(route('categories.update', id), {
+        preserveScroll: true,
+        only: ['categories'], // <-- Ito yung partial reload!
         onSuccess: () => {
             editingId.value = null;
             toast.success("Updated successfully!");
@@ -99,6 +115,8 @@ const confirmDeleteCategory = (id) => {
 const executeDelete = () => {
     if (categoryToDelete.value) {
         mainForm.delete(route('categories.destroy', categoryToDelete.value), {
+            preserveScroll: true,
+            only: ['categories', 'flash'], // <-- Partial reload (dinagdag ang flash para sa error messages)
             onSuccess: () => {
                 toast.success("Category removed!");
                 isDeleteDialogOpen.value = false;
@@ -120,11 +138,31 @@ const executeDelete = () => {
             <FolderTree class="w-8 h-8 text-slate-300" />
         </div>
 
+        <!-- START: CENTERED TABS -->
+            <div class="flex justify-center w-full mb-5">
+                <div class="inline-flex p-1 space-x-1 bg-slate-50 border border-slate-200 rounded-lg shadow-sm">
+                    <button
+                        @click="activeTab = 'main'"
+                        :class="activeTab === 'main' ? 'bg-white shadow-sm text-slate-700' : 'text-slate-500 hover:text-slate-700'"
+                        class="px-6 py-1.5 text-[11px] font-semibold uppercase tracking-wider rounded-md transition-all duration-200 flex items-center justify-center gap-2"
+                    >
+                        <Tag class="w-3.5 h-3.5" :class="activeTab === 'main' ? 'text-slate-600' : 'text-slate-400'" /> MAIN
+                    </button>
+                    <button
+                        @click="activeTab = 'sub'"
+                        :class="activeTab === 'sub' ? 'bg-white shadow-sm text-amber-600' : 'text-slate-500 hover:text-slate-700'"
+                        class="px-6 py-1.5 text-[11px] font-semibold uppercase tracking-wider rounded-md transition-all duration-200 flex items-center justify-center gap-2"
+                    >
+                        <GitBranch class="w-3.5 h-3.5" :class="activeTab === 'sub' ? 'text-amber-500' : 'text-slate-400'" /> SUB-CATEGORY
+                    </button>
+                </div>
+            </div>
+        <!-- END: CENTERED TABS -->
         <div class="grid grid-cols-1 md:grid-cols-12 gap-6">
             <!-- Sidebar: Separate Forms -->
             <div class="md:col-span-4 space-y-6">
                 <!-- Main Category Form -->
-                <div class="bg-white border border-slate-200 shadow-sm rounded-lg p-5">
+                <div v-if="activeTab === 'main'" class="bg-white border border-slate-200 shadow-sm rounded-lg p-5">
                     <h3 class="text-xs font-bold text-slate-800 uppercase mb-4 flex items-center gap-2">
                         <Tag class="w-3.5 h-3.5 text-purple-600" /> New Main Category
                     </h3>
@@ -148,7 +186,7 @@ const executeDelete = () => {
                 </div>
 
                 <!-- Sub-Category Form -->
-                <div class="bg-white border border-slate-200 shadow-sm rounded-lg p-5">
+                <div v-if="activeTab === 'sub'" class="bg-white border border-slate-200 shadow-sm rounded-lg p-5">
                     <h3 class="text-xs font-bold text-slate-800 uppercase mb-4 flex items-center gap-2">
                         <GitBranch class="w-3.5 h-3.5 text-amber-500" /> New Sub-Category
                     </h3>
@@ -190,7 +228,7 @@ const executeDelete = () => {
                             <Layers class="w-4 h-4 text-slate-400" />
                             <span class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Hierarchy View</span>
                         </div>
-                        <span class="text-[10px] bg-slate-200 text-slate-600 px-2 py-0.5 rounded-full font-mono font-bold">{{ categories.length }} TOTAL</span>
+                        <span class="text-[10px] bg-slate-200 text-slate-600 px-2 py-0.5 rounded-full font-mono font-bold">{{ displayedCategories.length }} TOTAL</span>
                     </div>
 
                     <div class="overflow-x-auto">
@@ -203,7 +241,7 @@ const executeDelete = () => {
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-slate-100">
-                                <tr v-for="category in orderedCategories" :key="category.id" 
+                                <tr v-for="category in displayedCategories" :key="category.id"
                                     class="hover:bg-slate-50/50 transition-colors group"
                                     :class="{'bg-slate-50/30': category.isChild}"
                                 >
@@ -217,13 +255,34 @@ const executeDelete = () => {
                                             />
                                         </div>
                                         <div v-else class="flex items-center">
-                                            <div v-if="category.isChild" class="flex items-center ml-4 mr-3 text-slate-300">
-                                                <CornerDownRight class="w-4 h-4" />
-                                            </div>
-                                            <div v-else class="w-1.5 h-1.5 rounded-full bg-purple-600 mr-4 shadow-sm"></div>
-                                            <span :class="[category.isChild ? 'text-slate-500 text-sm' : 'font-bold text-slate-900']">
-                                                {{ category.name }}
-                                            </span>
+                                            <!-- Design para sa MAIN Category -->
+                                            <template v-if="!category.isChild">
+                                                <div class="flex flex-col ml-1">
+                                                    <div class="flex items-center">
+                                                        <div class="w-1.5 h-1.5 rounded-full bg-purple-600 mr-3 shadow-sm"></div>
+                                                        <span class="font-bold text-slate-900">{{ category.name }}</span>
+                                                    </div>
+                                                    <span class="text-[10px] text-slate-400 font-medium ml-4 mt-0.5 flex items-center gap-1">
+                                                        <Layers class="w-3 h-3 text-slate-300" />
+                                                        {{ category.childCount }} linked sub-categories
+                                                    </span>
+                                                </div>
+                                            </template>
+                                            
+                                            <!-- Design para sa SUB Category (may Parent Indicator) -->
+                                            <template v-else>
+                                                <div class="flex flex-col ml-2">
+                                                    <!-- Ito yung indicator ng Main Category -->
+                                                    <span class="text-[9px] text-slate-400 font-bold uppercase tracking-wider mb-0.5">
+                                                        {{ category.parentName }}
+                                                    </span>
+                                                    <!-- Ito yung Sub-category name -->
+                                                    <div class="flex items-center text-slate-700">
+                                                        <CornerDownRight class="w-3.5 h-3.5 text-slate-300 mr-2" />
+                                                        <span class="text-sm font-semibold">{{ category.name }}</span>
+                                                    </div>
+                                                </div>
+                                            </template>
                                         </div>
                                     </td>
                                     <td class="py-4 px-6 text-center">
