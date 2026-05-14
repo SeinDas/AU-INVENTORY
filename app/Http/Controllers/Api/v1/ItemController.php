@@ -5,18 +5,17 @@ namespace App\Http\Controllers\Api\v1;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Item;
-use App\Models\Unit;
-use App\Models\Category;
+use App\Models\CategoryItem;
 use Illuminate\Support\Facades\Gate;
 
 class ItemController extends Controller
 {
     public function index(Request $request)
     {
-        return Item::with(['category', 'unit'])->get();
+        return Item::with(['categoryItem.mainCategory', 'categoryItem.subCategory', 'unit'])->get();
     }
 
-    public function productCode(Request $request)
+    public function productCode()
     {
         return Item::get(['id', 'product_code', 'name', 'quantity']);
     }
@@ -29,36 +28,33 @@ class ItemController extends Controller
     public function show(Item $item)
     {
         Gate::authorize('view-inventory');
-        return $item->load(['category', 'unit']);
-    }
-
-    public function create()
-    {
-        Gate::authorize('manage-inventory');
-        return [
-            'mainCategories' => Category::whereNull('parent_id')->get(),
-            'subCategories' => Category::whereNotNull('parent_id')->get(),
-            'units' => Unit::all(),
-        ];
+        return $item->load(['categoryItem.mainCategory', 'categoryItem.subCategory', 'unit']);
     }
 
     public function store(Request $request)
     {
         $validated = $request->validate([
             'product_code' => 'required|unique:items,product_code',
-            'serial_no'    => 'nullable|string|max:255',
             'name'         => 'required|string|max:255',
             'quantity'     => 'required|numeric|min:0',
+            'min_stock'    => 'required|numeric|min:0',
             'category_id'  => 'required|exists:categories,id',
+            'subcategory_id' => 'nullable|exists:categories,id',
+            'unit_id'      => 'nullable|exists:units,id'
         ]);
 
-        $data = collect($validated)->except('category_id')->toArray();
+        $categoryMapping = CategoryItem::firstOrCreate([
+            'category_id' => $request->category_id,
+            'subcategory_id' => $request->subcategory_id,
+        ]);
+
+        $data = collect($validated)->except(['category_id', 'subcategory_id'])->toArray();
+        $data['category_items_id'] = $categoryMapping->id;
         $data['serial_no'] = $request->serial_no ?? '0';
 
         $item = Item::create($data);
-        $item->category()->attach($request->category_id);
         
-        return $item->load(['category', 'unit']);
+        return $item->load(['categoryItem.mainCategory', 'categoryItem.subCategory', 'unit']);
     }
 
     public function update(Request $request, Item $item)
@@ -67,18 +63,23 @@ class ItemController extends Controller
 
         $validated = $request->validate([
             'product_code' => 'required|string|max:255|unique:items,product_code,' . $item->id,
-            'serial_no'    => 'nullable|string|max:255',
             'name'         => 'required|string|max:255',
             'min_stock'    => 'required|numeric|min:0',
-            'unit_id'      => 'nullable|exists:units,id',
             'category_id'  => 'required|exists:categories,id',
-            'description'  => 'nullable|string'
+            'subcategory_id' => 'nullable|exists:categories,id'
         ]);
 
-        $item->update(collect($validated)->except('category_id')->toArray());
-        $item->category()->sync([$request->category_id]);
+        $categoryMapping = CategoryItem::firstOrCreate([
+            'category_id' => $request->category_id,
+            'subcategory_id' => $request->subcategory_id,
+        ]);
 
-        return $item->load(['category', 'unit']);
+        $data = collect($validated)->except(['category_id', 'subcategory_id'])->toArray();
+        $data['category_items_id'] = $categoryMapping->id;
+
+        $item->update($data);
+
+        return $item->load(['categoryItem.mainCategory', 'categoryItem.subCategory', 'unit']);
     }
 
     public function destroy(Item $item)
@@ -86,26 +87,5 @@ class ItemController extends Controller
         Gate::authorize('delete-inventory');
         $item->delete();
         return ['status' => 'success'];
-    }
-
-    public function generateProductCode(Request $request)
-    {
-        $targetId = $request->category_id ?: $request->main_category_id;
-        if (!$targetId) return ['next_code' => ''];
-
-        $category = Category::findOrFail($targetId);
-        $prefix = strtoupper(str_replace(' ', '', $category->name));
-
-        $latest = Item::whereHas('category', function($q) use ($targetId) {
-            $q->where('categories.id', $targetId);
-        })->latest('id')->first();
-
-        $nextNumber = 1;
-        if ($latest && str_contains($latest->product_code, '-')) {
-            $parts = explode('-', $latest->product_code);
-            $nextNumber = intval(end($parts)) + 1;
-        }
-
-        return ['next_code' => $prefix . '-' . str_pad($nextNumber, 3, '0', STR_PAD_LEFT)];
     }
 }

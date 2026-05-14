@@ -4,9 +4,8 @@ import AppLayout from '@/layouts/AppLayout.vue';
 import Card from '@/components/ui/card/Card.vue';
 import { Save, Loader2, Info, ArrowLeft } from 'lucide-vue-next';
 import { useToast } from 'vue-toastification';
-import { watch, computed, ref, onMounted, nextTick } from 'vue';
+import { watch, onMounted } from 'vue';
 import axios from 'axios';
-import { route } from 'ziggy-js';
 
 const toast = useToast();
 
@@ -17,65 +16,35 @@ const props = defineProps({
     units: Array
 });
 
-// Local state to track selected Main Category
-const selectedMainId = ref('');
-
-// Computed property to show only relevant sub-categories
-const availableSubCategories = computed(() => {
-    if (!selectedMainId.value) return [];
-    return props.subCategories.filter(sub => sub.parent_id == selectedMainId.value);
-});
-
 const form = useForm({
     product_code: props.item.product_code,
     serial_no: props.item.serial_no || '0',
     name: props.item.name,
     min_stock: props.item.min_stock,
-    category_id: props.item.category?.[0]?.id || '', // Handling pivot many-to-many
+    category_id: props.item.category_item?.category_id || '', 
+    subcategory_id: props.item.category_item?.subcategory_id || '',
     unit_id: props.item.unit_id || '', 
     description: props.item.description || ''
 });
 
-// Logic to determine initial Main Category on load
-onMounted(async () => {
-    const currentCategory = props.item.category?.[0];
-    
-    if (currentCategory) {
-        // Find if this is a sub-category by looking it up in the subCategories prop
-        const subCat = props.subCategories.find(s => s.id == currentCategory.id);
-        
-        if (subCat) {
-            // If it's a sub-category, set the parent first
-            selectedMainId.value = subCat.parent_id;
-            
-            // Use nextTick to wait for availableSubCategories computed property to update
-            await nextTick();
-            form.category_id = subCat.id;
-        } else {
-            // If it's not a sub-category, it's a main category
-            selectedMainId.value = currentCategory.id;
-            form.category_id = ''; 
-        }
-    }
-});
-
-// Reset child selection when Main Category changes manually
-watch(selectedMainId, (newVal, oldVal) => {
-    // Only clear if the change is user-initiated (oldVal exists)
-    if (oldVal) {
-        form.category_id = '';
+// Watch the primary category to reset sub-category and clear product code
+watch(() => form.category_id, (newVal, oldVal) => {
+    // We only clear if the value actually changes (prevents clearing on initial load)
+    if (oldVal !== undefined && oldVal !== newVal) {
+        form.subcategory_id = '';
         form.product_code = '';
     }
 });
 
-// Generate product code whenever a sub-category or main category is selected
-watch([selectedMainId, () => form.category_id], async ([newMain, newSub]) => {
-    if (newSub || newMain) {
+// Watch both fields to trigger code generation
+watch([() => form.category_id, () => form.subcategory_id], async ([newCat, newSub], [oldCat, oldSub]) => {
+    // Only fetch if a category is selected and it's not the initial mounting state
+    if (newCat && (newCat !== oldCat || newSub !== oldSub)) {
         try {
             const response = await axios.get(route('web.items.generate-code'), {
                 params: { 
-                    main_category_id: Number(selectedMainId.value),
-                    category_id: form.category_id ? Number(form.category_id) : null 
+                    category_id: newCat,
+                    subcategory_id: newSub || null 
                 }
             });
             form.product_code = response.data.next_code;
@@ -86,11 +55,6 @@ watch([selectedMainId, () => form.category_id], async ([newMain, newSub]) => {
 });
 
 const submit = () => {
-    // If no sub-category is selected, fallback to main category ID
-    if (!form.category_id && selectedMainId.value) {
-        form.category_id = selectedMainId.value;
-    }
-
     form.put(route('web.items.update', props.item.id), {
         preserveScroll: true,
         onSuccess: () => toast.success("Item updated successfully!"),
@@ -134,14 +98,12 @@ const submit = () => {
                     </div>
                     
                     <form @submit.prevent="submit" class="p-6 space-y-5">
-                        <!-- Item Name -->
                         <div>
                             <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Item Name *</label>
                             <input v-model="form.name" type="text" class="w-full border border-slate-300 rounded-sm px-3 py-2 text-sm focus:ring-1 focus:ring-purple-600 focus:border-purple-600 outline-none transition-colors" required />
                             <div v-if="form.errors.name" class="text-red-600 text-[11px] mt-1 font-semibold">{{ form.errors.name }}</div>
                         </div>
 
-                        <!-- Serial Number -->
                         <div>
                             <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Serial Number</label>
                             <input 
@@ -152,11 +114,10 @@ const submit = () => {
                             <div v-if="form.errors.serial_no" class="text-red-600 text-[11px] mt-1 font-semibold">{{ form.errors.serial_no }}</div>
                         </div>
 
-                        <!-- Categorization -->
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
                                 <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Main Category *</label>
-                                <select v-model="selectedMainId" class="w-full border border-slate-300 rounded-sm px-3 py-2 text-sm focus:ring-1 focus:ring-purple-600 focus:border-purple-600 outline-none transition-colors bg-white" required>
+                                <select v-model="form.category_id" class="w-full border border-slate-300 rounded-sm px-3 py-2 text-sm focus:ring-1 focus:ring-purple-600 focus:border-purple-600 outline-none transition-colors bg-white" required>
                                     <option value="">Select Classification</option>
                                     <option v-for="cat in mainCategories" :key="cat.id" :value="cat.id">{{ cat.name }}</option>
                                 </select>
@@ -164,18 +125,17 @@ const submit = () => {
                             <div>
                                 <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Sub-Category</label>
                                 <select 
-                                    v-model="form.category_id" 
-                                    :disabled="!selectedMainId"
+                                    v-model="form.subcategory_id" 
+                                    :disabled="!form.category_id"
                                     class="w-full border border-slate-300 rounded-sm px-3 py-2 text-sm focus:ring-1 focus:ring-purple-600 focus:border-purple-600 outline-none transition-colors bg-white disabled:bg-slate-50" 
                                 >
-                                    <option value="">Select Sub-Category (Optional)</option>
-                                    <option v-for="sub in availableSubCategories" :key="sub.id" :value="sub.id">{{ sub.name }}</option>
+                                    <option value="">None</option>
+                                    <option v-for="sub in subCategories" :key="sub.id" :value="sub.id">{{ sub.name }}</option>
                                 </select>
-                                <div v-if="form.errors.category_id" class="text-red-600 text-[11px] mt-1 font-semibold">{{ form.errors.category_id }}</div>
+                                <div v-if="form.errors.subcategory_id" class="text-red-600 text-[11px] mt-1 font-semibold">{{ form.errors.subcategory_id }}</div>
                             </div>
                         </div>
 
-                        <!-- Product Code & Units -->
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
                                 <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Product Code *</label>
@@ -192,13 +152,12 @@ const submit = () => {
                                 <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Unit of Measure</label>
                                 <select v-model="form.unit_id" class="w-full border border-slate-300 rounded-sm px-3 py-2 text-sm focus:ring-1 focus:ring-purple-600 focus:border-purple-600 outline-none transition-colors bg-white">
                                     <option value="">Select Unit</option>
-                                    <option v-for="unit in props.units" :key="unit.id" :value="unit.id">{{ unit.name }}</option>
+                                    <option v-for="unit in units" :key="unit.id" :value="unit.id">{{ unit.name }}</option>
                                 </select>
                                 <div v-if="form.errors.unit_id" class="text-red-600 text-[11px] mt-1 font-semibold">{{ form.errors.unit_id }}</div>
                             </div>
                         </div>
 
-                        <!-- Stock Info -->
                         <div>
                             <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Min. Stock Level</label>
                             <input 
@@ -210,7 +169,6 @@ const submit = () => {
                             <div v-if="form.errors.min_stock" class="text-red-600 text-[11px] mt-1 font-semibold">{{ form.errors.min_stock }}</div>
                         </div>
 
-                        <!-- Description -->
                         <div>
                             <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Additional Description</label>
                             <textarea 
@@ -220,7 +178,6 @@ const submit = () => {
                             <div v-if="form.errors.description" class="text-red-600 text-[11px] mt-1 font-semibold">{{ form.errors.description }}</div>
                         </div>
 
-                        <!-- Action Buttons -->
                         <div class="pt-4 flex items-center justify-end gap-3 border-t border-slate-100">
                             <Link :href="route('web.items.index')" class="text-sm font-semibold text-slate-500 hover:text-slate-800 transition-colors px-4">
                                 Cancel

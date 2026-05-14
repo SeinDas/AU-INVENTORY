@@ -2,36 +2,34 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+// 1. Add this import
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 
 class Category extends Model
 {
-    use HasFactory;
+    protected $fillable = ['name'];
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array<int, string>
-     */
-    protected $fillable = ['name', 'parent_id'];
-
-    public function parent()
+    public function categoryItemsAsSub(): HasMany
     {
-        return $this->belongsTo(Category::class, 'parent_id');
+        return $this->hasMany(CategoryItem::class, 'subcategory_id');
     }
 
-    public function children()
+    // 2. Change HasMany to HasManyThrough
+    public function items(): HasManyThrough
     {
-        return $this->hasMany(Category::class, 'parent_id');
+        return $this->hasManyThrough(
+            Item::class, 
+            CategoryItem::class, 
+            'subcategory_id', 
+            'category_items_id'
+        );
+        
     }
-    /**
-     * Get the items for the category.
-     * This defines the relationship to your Items table.
-     */
-    public function items()
+    
+    public function categoryItemsAsMain(): HasMany
     {
-        return $this->belongsToMany(Item::class, 'category_item');
+        return $this->hasMany(CategoryItem::class, 'category_id');
     }
 }
