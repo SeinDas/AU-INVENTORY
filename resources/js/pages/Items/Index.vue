@@ -34,7 +34,6 @@ const props = defineProps({
 const toast = useToast();
 const breadcrumbs = [{ title: "Inventory Items", href: "#" }];
 
-// Search functionality
 const searchQuery = ref('');
 
 const filteredItems = computed(() => {
@@ -45,7 +44,9 @@ const filteredItems = computed(() => {
         return (
             item.name?.toLowerCase().includes(query) ||
             item.product_code?.toLowerCase().includes(query) ||
-            item.category?.name?.toLowerCase().includes(query)
+            item.serial_no?.toLowerCase().includes(query) ||
+            item.category_item?.sub_category?.name?.toLowerCase().includes(query) ||
+            item.category_item?.main_category?.name?.toLowerCase().includes(query)
         );
     });
 });
@@ -55,13 +56,11 @@ const form = useForm({});
 const isDeleteDialogOpen = ref(false);
 const itemToDelete = ref(null);
 
-// 1. Triggered when the trash icon is clicked
 const confirmDelete = (id) => {
     itemToDelete.value = id;
     isDeleteDialogOpen.value = true;
 };
 
-// 2. Triggered when "Delete Item" is clicked inside the Alert Dialog
 const executeDelete = () => {
     if (!itemToDelete.value) return;
 
@@ -79,7 +78,6 @@ const executeDelete = () => {
     });
 };
 
-// Helper function to handle numeric comparison safely
 const isLowStock = (item) => {
     const qty = Number(item.quantity);
     const min = Number(item.min_stock);
@@ -189,13 +187,12 @@ const isLowStock = (item) => {
             </div>
         </div>
 
-        <div class="flex items-center gap-2 text-[10px] text-slate-400 uppercase font-bold  mt-4">
+        <div class="flex items-center gap-2 text-[10px] text-slate-400 uppercase font-bold mt-4">
             <div class="w-1 h-1 bg-slate-300 rounded-full"></div>
-            <span v-if="$page.props.auth.user.role === 'Viewer'">Read-Only Audit View</span>
+            <span v-if="$page.props.auth.user.role === 'viewer'">Read-Only Audit View</span>
             <span v-else>Authorized Registry Management: {{ $page.props.auth.user.role }}</span>
         </div>
 
-        <!-- Alert Dialog Component -->
         <AlertDialog v-model:open="isDeleteDialogOpen">
             <AlertDialogContent>
                 <AlertDialogHeader>

@@ -4,34 +4,48 @@ import AppLayout from '@/layouts/AppLayout.vue';
 import Card from '@/components/ui/card/Card.vue';
 import { Save, Loader2, Info } from 'lucide-vue-next';
 import { useToast } from 'vue-toastification';
-import { watch } from 'vue'; 
+import { watch } from 'vue';
 import axios from 'axios';
 
 const toast = useToast();
+
 const props = defineProps({
-    categories: Array,
+    mainCategories: Array, 
+    subCategories: Array,
     units: Array
 });
 
 const form = useForm({
     product_code: '',
+    serial_no: '0',
     name: '',
     quantity: 0,
     min_stock: 0,
-    category_id: '',
+    category_id: '',     
+    subcategory_id: '',  
     unit_id: '', 
     description: ''
 });
 
-watch(() => form.category_id, async (newId) => {
-    if (newId) {
+// Watch the primary category to reset sub-category and clear product code
+watch(() => form.category_id, () => {
+    form.subcategory_id = '';
+    form.product_code = '';
+});
+
+// Watch both fields to trigger the auto-generation logic
+watch([() => form.category_id, () => form.subcategory_id], async ([newCat, newSub]) => {
+    if (newCat) {
         try {
             const response = await axios.get(route('web.items.generate-code'), {
-                params: { category_id: newId }
+                params: { 
+                    category_id: newCat,
+                    subcategory_id: newSub || null 
+                }
             });
             form.product_code = response.data.next_code;
         } catch (error) {
-            console.error("Product Code Generation Error:", error);
+            console.error("Code Gen Error:", error);
             toast.error("Failed to generate product code.");
         }
     } else {
@@ -42,12 +56,8 @@ watch(() => form.category_id, async (newId) => {
 const submit = () => {
     form.post(route('web.items.store'), {
         preserveScroll: true,
-        onSuccess: () => {
-            toast.success("Item registered successfully!");
-        },
-        onError: () => {
-            toast.error("Please check the form for errors.");
-        }
+        onSuccess: () => toast.success("Item registered successfully!"),
+        onError: () => toast.error("Please check the form for errors.")
     });
 };
 </script>
@@ -67,7 +77,9 @@ const submit = () => {
                 
                 <Card class="p-4 bg-slate-50 border border-slate-200 shadow-sm rounded-lg">
                     <div class="flex gap-3">
-                        <Info class="w-5 h-5 text-slate-400 shrink-0" />
+                        <span class="w-5 h-5 text-slate-400 shrink-0">
+                            <Info />
+                        </span>
                         <p class="text-xs text-slate-500 leading-relaxed">
                             Fields marked with an asterisk (*) are required for the official registry.
                         </p>
@@ -84,23 +96,44 @@ const submit = () => {
                     <form @submit.prevent="submit" class="p-6 space-y-5">
                         <div>
                             <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Item Name *</label>
+                            <input v-model="form.name" type="text" class="w-full border border-slate-300 rounded-sm px-3 py-2 text-sm focus:ring-1 focus:ring-purple-600 focus:border-purple-600 outline-none transition-colors" required />
+                            <div v-if="form.errors.name" class="text-red-600 text-[11px] mt-1 font-semibold">{{ form.errors.name }}</div>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Serial Number</label>
                             <input 
-                                v-model="form.name" 
+                                v-model="form.serial_no" 
                                 type="text" 
                                 class="w-full border border-slate-300 rounded-sm px-3 py-2 text-sm focus:ring-1 focus:ring-purple-600 focus:border-purple-600 outline-none transition-colors" 
-                                required 
+                                placeholder="Enter 0 if none"
                             />
+                            <div v-if="form.errors.serial_no" class="text-red-600 text-[11px] mt-1 font-semibold">{{ form.errors.serial_no }}</div>
                         </div>
 
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
                                 <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Category *</label>
                                 <select v-model="form.category_id" class="w-full border border-slate-300 rounded-sm px-3 py-2 text-sm focus:ring-1 focus:ring-purple-600 focus:border-purple-600 outline-none transition-colors bg-white" required>
-                                    <option value="">Select Classification</option>
-                                    <option v-for="cat in props.categories" :key="cat.id" :value="cat.id">{{ cat.name }}</option>
+                                    <option value="">Select Category</option>
+                                    <option v-for="cat in mainCategories" :key="cat.id" :value="cat.id">{{ cat.name }}</option>
                                 </select>
-                                <div v-if="form.errors.category_id" class="text-red-600 text-[11px] mt-1 font-semibold">{{ form.errors.category_id }}</div>
                             </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Sub-Category (Optional)</label>
+                                <select 
+                                    v-model="form.subcategory_id" 
+                                    :disabled="!form.category_id"
+                                    class="w-full border border-slate-300 rounded-sm px-3 py-2 text-sm focus:ring-1 focus:ring-purple-600 focus:border-purple-600 outline-none transition-colors bg-white disabled:bg-slate-50" 
+                                >
+                                    <option value="">None</option>
+                                    <option v-for="sub in subCategories" :key="sub.id" :value="sub.id">{{ sub.name }}</option>
+                                </select>
+                                <div v-if="form.errors.subcategory_id" class="text-red-600 text-[11px] mt-1 font-semibold">{{ form.errors.subcategory_id }}</div>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
                                 <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Product Code *</label>
                                 <input 
@@ -108,20 +141,22 @@ const submit = () => {
                                     type="text" 
                                     placeholder="Auto-generated"
                                     class="w-full border border-slate-300 rounded-sm px-3 py-2 text-sm focus:ring-1 focus:ring-purple-600 focus:border-purple-600 outline-none transition-colors placeholder:text-slate-300 bg-slate-50" 
+                                    readonly
                                     required 
                                 />
                                 <div v-if="form.errors.product_code" class="text-red-600 text-[11px] mt-1 font-semibold">{{ form.errors.product_code }}</div>
                             </div>
-                        </div>
-
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
                                 <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Unit of Measure</label>
                                 <select v-model="form.unit_id" class="w-full border border-slate-300 rounded-sm px-3 py-2 text-sm focus:ring-1 focus:ring-purple-600 focus:border-purple-600 outline-none transition-colors bg-white">
                                     <option value="">Select Unit</option>
-                                    <option v-for="unit in props.units" :key="unit.id" :value="unit.id">{{ unit.name }}</option>
+                                    <option v-for="unit in units" :key="unit.id" :value="unit.id">{{ unit.name }}</option>
                                 </select>
+                                <div v-if="form.errors.unit_id" class="text-red-600 text-[11px] mt-1 font-semibold">{{ form.errors.unit_id }}</div>
                             </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
                                 <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Initial Quantity</label>
                                 <input 
@@ -132,9 +167,6 @@ const submit = () => {
                                 />
                                 <div v-if="form.errors.quantity" class="text-red-600 text-[11px] mt-1 font-semibold">{{ form.errors.quantity }}</div>
                             </div>
-                        </div>
-
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
                                 <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Min. Stock Level</label>
                                 <input 
@@ -155,6 +187,7 @@ const submit = () => {
                                 class="w-full border border-slate-300 rounded-sm px-3 py-2 text-sm focus:ring-1 focus:ring-purple-600 focus:border-purple-600 outline-none transition-colors min-h-[100px]" 
                                 placeholder="Enter asset details or serial numbers..."
                             ></textarea>
+                            <div v-if="form.errors.description" class="text-red-600 text-[11px] mt-1 font-semibold">{{ form.errors.description }}</div>
                         </div>
 
                         <div class="pt-4 flex items-center justify-end gap-3 border-t border-slate-100">

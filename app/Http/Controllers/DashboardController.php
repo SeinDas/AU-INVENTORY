@@ -4,8 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Item;
 use App\Models\Category;
-use App\Models\StockIn;
-use App\Models\StockOut;
+use App\Models\Transaction;
 use Inertia\Inertia;
 use Illuminate\Http\Request;
 
@@ -13,50 +12,38 @@ class DashboardController extends Controller
 {
     public function index(Request $request)
     {
-        // 1. Fetch recent Stock In movements
-        $stockIn = StockIn::with('item')
+        // 1. Fetch recent transactions (replacing the merged StockIn/StockOut)
+        $recent_transactions = Transaction::with('item')
             ->latest()
-            ->limit(5)
+            ->limit(8)
             ->get()
-            ->map(fn($item) => $item->setAttribute('type', 'In'));
+            ->map(function($transaction) {
+                // Ensure the 'type' matches your frontend expectations (In/Out)
+                $transaction->setAttribute('type', ucfirst($transaction->type));
+                return $transaction;
+            });
 
-        // 2. Fetch recent Stock Out movements
-        $stockOut = StockOut::with('item')
-            ->latest()
-            ->limit(5)
-            ->get()
-            ->map(fn($item) => $item->setAttribute('type', 'Out'));
-
-        // 3. Merge and sort
-        $recent_transactions = $stockIn->concat($stockOut)
-            ->sortByDesc('created_at')
-            ->take(8)
-            ->values();
-
-        // 4. Prepare Data
+        // 2. Prepare Data
         $data = [
             'stats' => [
                 'total_items'      => Item::count(),
                 'low_stock_count'  => Item::whereRaw('quantity <= min_stock')->count(),
                 'total_categories' => Category::count(),
-                'recent_updates'   => StockIn::whereDate('created_at', today())->count() + 
-                                    StockOut::whereDate('created_at', today())->count(),
+                'recent_updates'   => Transaction::whereDate('created_at', today())->count(),
             ],
             'top_stock_items' => Item::orderBy('quantity', 'desc')
                 ->limit(5)
                 ->get(),
             'low_stock_items' => Item::whereRaw('quantity <= min_stock')
-                ->with(['unit', 'category'])
+                ->with(['unit', 'categories'])
                 ->get(),
             'recent_transactions' => $recent_transactions,
         ];
 
-        // API Response
         if ($request->wantsJson()) {
-            return response()->json($data);
+            return $data;
         }
 
-        // Inertia Response
         return Inertia::render('Dashboard', $data);
     }
 }

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Category;
+use App\Models\CategoryItem;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -12,22 +13,38 @@ class CategoryController extends Controller
     {
         $categories = Category::withCount('items')->get();
 
+        $categoryItems = CategoryItem::all();
+
         if ($request->wantsJson()) {
-            return response()->json($categories);
+            return response()->json([
+                'categories' => $categories,
+                'categoryItems' => $categoryItems
+            ]);
         }
 
         return Inertia::render('Categories/Index', [
-            'categories' => $categories
+            'categories' => $categories,
+            'categoryItems' => $categoryItems 
         ]);
     }
 
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'name' => 'required|max:100|unique:categories,name'
+            'name' => 'required|max:100|unique:categories,name',
+            'category_id' => 'nullable|exists:categories,id' 
         ]);
 
-        $category = Category::create($validated);
+        $category = Category::create([
+            'name' => $validated['name']
+        ]);
+
+        if ($request->has('category_id') && $request->category_id) {
+            CategoryItem::create([
+                'category_id' => $request->category_id,
+                'subcategory_id' => $category->id,
+            ]);
+        }
         
         if ($request->wantsJson()) {
             return response()->json([
@@ -60,12 +77,11 @@ class CategoryController extends Controller
     public function destroy(Request $request, Category $category)
     {
         if ($category->items()->count() > 0) {
+            $msg = 'Cannot delete category. There are still items assigned to it.';
             if ($request->wantsJson()) {
-                return response()->json([
-                    'error' => 'Cannot delete category. There are still items assigned to it.'
-                ], 422);
+                return response()->json(['error' => $msg], 422);
             }
-            return redirect()->back()->with('error', 'Cannot delete category. There are still items assigned to it.');
+            return redirect()->back()->with('error', $msg);
         }
 
         $category->delete();
