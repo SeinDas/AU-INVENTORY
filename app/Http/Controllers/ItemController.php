@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Models\Item;
 use App\Models\Unit;
 use App\Models\Category;
-use App\Models\CategoryItem;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
@@ -16,7 +15,7 @@ class ItemController extends Controller
     {
         Gate::authorize('view-inventory'); 
         return Inertia::render('Items/Index', [
-            'items' => Item::with(['categoryItem.mainCategory', 'categoryItem.subCategory', 'unit'])->get()
+            'items' => Item::with(['category.parent', 'unit'])->get()
         ]);
     }
 
@@ -24,8 +23,8 @@ class ItemController extends Controller
     {
         Gate::authorize('manage-inventory');
         return Inertia::render('Items/Create', [
-            'mainCategories' => Category::whereDoesntHave('categoryItemsAsSub')->select('id', 'name')->get(),
-            'subCategories' => Category::whereHas('categoryItemsAsSub')->select('id', 'name')->get(),
+            'mainCategories' => Category::whereNull('parent_id')->select('id', 'name')->get(),
+            'subCategories' => Category::whereNotNull('parent_id')->select('id', 'name', 'parent_id')->get(),
             'units' => Unit::select('id', 'name')->get()
         ]);
     }
@@ -38,19 +37,16 @@ class ItemController extends Controller
             'name'         => 'required|string|max:255',
             'quantity'     => 'required|numeric|min:0',
             'min_stock'    => 'required|numeric|min:0',
-            'category_id'  => 'required|exists:categories,id',
-            'subcategory_id' => 'nullable|exists:categories,id',
+            'category_id'  => 'required|exists:categories,id', 
+            'subcategory_id' => 'nullable|exists:categories,id', 
             'unit_id'      => 'nullable|exists:units,id',
             'description'  => 'nullable|string'
         ]);
 
-        $categoryMapping = CategoryItem::firstOrCreate([
-            'category_id' => $request->category_id,
-            'subcategory_id' => $request->subcategory_id,
-        ]);
+        $finalCategoryId = $request->subcategory_id ?: $request->category_id;
 
-        $data = collect($validated)->except(['category_id', 'subcategory_id'])->toArray();
-        $data['category_items_id'] = $categoryMapping->id;
+        $data = collect($validated)->except(['subcategory_id'])->toArray();
+        $data['category_id'] = $finalCategoryId;
         $data['serial_no'] = $request->serial_no ?? '0';
 
         Item::create($data);
@@ -62,7 +58,7 @@ class ItemController extends Controller
     {
         Gate::authorize('view-inventory');
         return Inertia::render('Items/Show', [
-            'item' => $item->load(['categoryItem.mainCategory', 'categoryItem.subCategory', 'unit'])
+            'item' => $item->load(['category.parent', 'unit'])
         ]);
     }
 
@@ -70,9 +66,9 @@ class ItemController extends Controller
     {
         Gate::authorize('manage-inventory');
         return Inertia::render('Items/Edit', [
-            'item' => $item->load(['categoryItem.mainCategory', 'categoryItem.subCategory']),
-            'mainCategories' => Category::whereDoesntHave('categoryItemsAsSub')->select('id', 'name')->get(),
-            'subCategories' => Category::whereHas('categoryItemsAsSub')->select('id', 'name')->get(),
+            'item' => $item->load(['category.parent']),
+            'mainCategories' => Category::whereNull('parent_id')->select('id', 'name')->get(),
+            'subCategories' => Category::whereNotNull('parent_id')->select('id', 'name', 'parent_id')->get(),
             'units' => Unit::select('id', 'name')->get()
         ]);
     }
@@ -90,13 +86,10 @@ class ItemController extends Controller
             'description'  => 'nullable|string'
         ]);
 
-        $categoryMapping = CategoryItem::firstOrCreate([
-            'category_id' => $request->category_id,
-            'subcategory_id' => $request->subcategory_id,
-        ]);
+        $finalCategoryId = $request->subcategory_id ?: $request->category_id;
 
-        $data = collect($validated)->except(['category_id', 'subcategory_id'])->toArray();
-        $data['category_items_id'] = $categoryMapping->id;
+        $data = collect($validated)->except(['subcategory_id'])->toArray();
+        $data['category_id'] = $finalCategoryId;
 
         $item->update($data);
 

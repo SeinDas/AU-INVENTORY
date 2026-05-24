@@ -4,32 +4,30 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-// 1. Add this import
-use Illuminate\Database\Eloquent\Relations\HasManyThrough;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Category extends Model
 {
-    protected $fillable = ['name'];
+    protected $fillable = ['name', 'parent_id'];
 
-    public function categoryItemsAsSub(): HasMany
+    public function parent(): BelongsTo
     {
-        return $this->hasMany(CategoryItem::class, 'subcategory_id');
+        return $this->belongsTo(Category::class, 'parent_id');
     }
 
-    // 2. Change HasMany to HasManyThrough
-    public function items(): HasManyThrough
+    public function children(): HasMany
     {
-        return $this->hasManyThrough(
-            Item::class, 
-            CategoryItem::class, 
-            'subcategory_id', 
-            'category_items_id'
-        );
-        
+        return $this->hasMany(Category::class, 'parent_id');
     }
     
-    public function categoryItemsAsMain(): HasMany
+    public function items(): HasMany
     {
-        return $this->hasMany(CategoryItem::class, 'category_id');
+        return $this->hasMany(Item::class);
+    }
+
+    // Optional: A helper to eager load children infinitely
+    public function nestedChildren(): HasMany
+    {
+        return $this->children()->with('nestedChildren');
     }
 }

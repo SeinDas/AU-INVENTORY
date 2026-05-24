@@ -14,13 +14,13 @@ class Item extends Model
         'quantity', 
         'min_stock', 
         'unit_id', 
-        'category_items_id', 
+        'category_id', 
         'description'
     ];
 
-    public function categoryItem(): BelongsTo
+    public function category(): BelongsTo
     {
-        return $this->belongsTo(CategoryItem::class, 'category_items_id');
+        return $this->belongsTo(Category::class);
     }
 
     public function unit(): BelongsTo

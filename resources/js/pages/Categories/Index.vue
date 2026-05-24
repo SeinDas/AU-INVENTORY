@@ -12,21 +12,18 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { Trash2, Plus, Loader2, FolderTree, Pencil, X, Check, CornerDownRight, Layers, Tag, GitBranch, Box } from 'lucide-vue-next';
+import { Trash2, Plus, FolderTree, Pencil, X, Check, CornerDownRight, Layers, Tag, GitBranch } from 'lucide-vue-next';
 import { useToast } from 'vue-toastification';
 
 const toast = useToast();
-
-// Combined Props: Added categoryItems based on functionality logic
 const props = defineProps({ 
-    categories: { type: Array, default: () => [] },
-    categoryItems: { type: Array, default: () => [] } 
+    categories: { type: Array, default: () => [] }
 });
 
 const breadcrumbs = [{ title: "Asset Classifications", href: "#" }];
 
-const mainForm = useForm({ name: '' });
-const subForm = useForm({ name: '', category_id: '' }); // Updated to use category_id
+const mainForm = useForm({ name: '', parent_id: null });
+const subForm = useForm({ name: '', parent_id: '' }); 
 
 const editingId = ref(null);
 const editForm = useForm({ name: '' });
@@ -35,35 +32,21 @@ const isDeleteDialogOpen = ref(false);
 const categoryToDelete = ref(null);
 const activeTab = ref('main');
 
-// Identifies which categories are acting as sub-categories
-const subIds = computed(() => {
-    const items = props.categoryItems || [];
-    return new Set(items.map(ci => ci.subcategory_id));
-});
-
-// Combined Computed Logic: UI splitting + Relational logic
 const displayedCategories = computed(() => {
     const allCats = props.categories || [];
-    const items = props.categoryItems || [];
 
     if (activeTab.value === 'main') {
-        // MAIN CATEGORIES: Filter out those that exist in subIds
         return allCats
-            .filter(c => !subIds.value.has(c.id))
+            .filter(c => !c.parent_id)
             .map(c => {
-                // Count how many subcategories are linked to this main category
-                const childCount = items.filter(ci => Number(ci.category_id) === Number(c.id)).length;
+                const childCount = allCats.filter(sub => sub.parent_id === c.id).length;
                 return { ...c, isChild: false, childCount };
             });
     } else {
-        // SUB-CATEGORIES: Only show categories that exist in subIds
         return allCats
-            .filter(c => subIds.value.has(c.id))
+            .filter(c => c.parent_id)
             .map(c => {
-                // Find the relational link for this subcategory
-                const link = items.find(ci => Number(ci.subcategory_id) === Number(c.id));
-                // Find the parent's name based on the link
-                const parent = link ? allCats.find(p => Number(p.id) === Number(link.category_id)) : null;
+                const parent = allCats.find(p => p.id === c.parent_id);
                 
                 return { 
                     ...c, 
@@ -77,7 +60,7 @@ const displayedCategories = computed(() => {
 const submitMain = () => {
     mainForm.post(route('categories.store'), {
         preserveScroll: true,
-        only: ['categories', 'categoryItems', 'flash'], 
+        only: ['categories', 'flash'], 
         onSuccess: () => {
             mainForm.reset();
             toast.success("Main category added!");
@@ -88,7 +71,7 @@ const submitMain = () => {
 const submitSub = () => {
     subForm.post(route('categories.store'), {
         preserveScroll: true,
-        only: ['categories', 'categoryItems', 'flash'], 
+        only: ['categories', 'flash'], 
         onSuccess: () => {
             subForm.reset();
             toast.success("Sub-category added!");
@@ -109,7 +92,7 @@ const cancelEdit = () => {
 const updateCategory = (id) => {
     editForm.put(route('categories.update', id), {
         preserveScroll: true,
-        only: ['categories', 'categoryItems', 'flash'],
+        only: ['categories', 'flash'],
         onSuccess: () => {
             editingId.value = null;
             toast.success("Updated successfully!");
@@ -126,7 +109,7 @@ const executeDelete = () => {
     if (categoryToDelete.value) {
         mainForm.delete(route('categories.destroy', categoryToDelete.value), {
             preserveScroll: true,
-            only: ['categories', 'categoryItems', 'flash'],
+            only: ['categories', 'flash'],
             onSuccess: () => {
                 toast.success("Category removed!");
                 isDeleteDialogOpen.value = false;
@@ -197,12 +180,12 @@ const executeDelete = () => {
                     </h3>
                     <form @submit.prevent="submitSub" class="space-y-3">
                         <select 
-                            v-model="subForm.category_id"
+                            v-model="subForm.parent_id"
                             class="w-full border border-slate-300 rounded-sm px-3 py-2 text-sm bg-white"
                             required
                         >
                             <option value="" disabled>Select Main Category</option>
-                            <option v-for="cat in categories.filter(c => !subIds.has(c.id))" :key="cat.id" :value="cat.id">
+                            <option v-for="cat in categories.filter(c => !c.parent_id)" :key="cat.id" :value="cat.id">
                                 {{ cat.name }}
                             </option>
                         </select>
@@ -215,8 +198,8 @@ const executeDelete = () => {
                         />
                         <button 
                             type="submit" 
-                            :disabled="subForm.processing || !subForm.category_id" 
-                            class="w-full bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 text-xs font-bold rounded-sm transition-colors uppercase flex items-center justify-center gap-2 disabled:opacity-50"
+                            :disabled="subForm.processing || !subForm.parent_id" 
+                            class="w-full bg-purple-700 hover:bg-purple-700 text-white px-4 py-2.5 text-xs font-bold rounded-sm transition-colors uppercase  flex items-center justify-center gap-2 disabled:opacity-50"
                         >
                             <Plus class="w-3.5 h-3.5" />
                             {{ subForm.processing ? 'Saving...' : 'Add Sub-Category' }}

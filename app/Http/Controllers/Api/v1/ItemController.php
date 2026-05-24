@@ -5,14 +5,13 @@ namespace App\Http\Controllers\Api\v1;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Item;
-use App\Models\CategoryItem;
 use Illuminate\Support\Facades\Gate;
 
 class ItemController extends Controller
 {
     public function index(Request $request)
     {
-        return Item::with(['categoryItem.mainCategory', 'categoryItem.subCategory', 'unit'])->get();
+        return Item::with(['category.parent', 'unit'])->get();
     }
 
     public function productCode()
@@ -28,7 +27,7 @@ class ItemController extends Controller
     public function show(Item $item)
     {
         Gate::authorize('view-inventory');
-        return $item->load(['categoryItem.mainCategory', 'categoryItem.subCategory', 'unit']);
+        return $item->load(['category.parent', 'unit']);
     }
 
     public function store(Request $request)
@@ -43,18 +42,15 @@ class ItemController extends Controller
             'unit_id'      => 'nullable|exists:units,id'
         ]);
 
-        $categoryMapping = CategoryItem::firstOrCreate([
-            'category_id' => $request->category_id,
-            'subcategory_id' => $request->subcategory_id,
-        ]);
+        $finalCategoryId = $request->subcategory_id ?: $request->category_id;
 
-        $data = collect($validated)->except(['category_id', 'subcategory_id'])->toArray();
-        $data['category_items_id'] = $categoryMapping->id;
+        $data = collect($validated)->except(['subcategory_id'])->toArray();
+        $data['category_id'] = $finalCategoryId;
         $data['serial_no'] = $request->serial_no ?? '0';
 
         $item = Item::create($data);
         
-        return $item->load(['categoryItem.mainCategory', 'categoryItem.subCategory', 'unit']);
+        return $item->load(['category.parent', 'unit']);
     }
 
     public function update(Request $request, Item $item)
@@ -69,17 +65,14 @@ class ItemController extends Controller
             'subcategory_id' => 'nullable|exists:categories,id'
         ]);
 
-        $categoryMapping = CategoryItem::firstOrCreate([
-            'category_id' => $request->category_id,
-            'subcategory_id' => $request->subcategory_id,
-        ]);
+        $finalCategoryId = $request->subcategory_id ?: $request->category_id;
 
-        $data = collect($validated)->except(['category_id', 'subcategory_id'])->toArray();
-        $data['category_items_id'] = $categoryMapping->id;
+        $data = collect($validated)->except(['subcategory_id'])->toArray();
+        $data['category_id'] = $finalCategoryId;
 
         $item->update($data);
 
-        return $item->load(['categoryItem.mainCategory', 'categoryItem.subCategory', 'unit']);
+        return $item->load(['category.parent', 'unit']);
     }
 
     public function destroy(Item $item)

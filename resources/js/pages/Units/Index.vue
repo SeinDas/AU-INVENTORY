@@ -14,6 +14,7 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { Button } from '@/components/ui/button';
 
 const props = defineProps({ units: Array });
 const breadcrumbs = [{ title: "Measurement Units", href: "#" }];
@@ -102,10 +103,10 @@ const executeDelete = () => {
                             <div v-if="form.errors.name" class="text-red-500 text-[10px] mt-1">{{ form.errors.name }}</div>
                         </div>
                         
-                        <button type="submit" :disabled="form.processing" class="w-full bg-purple-600 hover:bg-purple-700 text-white px-4 py-2.5 text-xs font-bold rounded-sm transition-colors uppercase  flex items-center justify-center gap-2 disabled:opacity-50">
+                        <Button type="submit" :disabled="form.processing" class="w-full bg-purple-600 hover:bg-purple-700 text-white px-4 py-2.5 text-xs font-bold rounded-sm transition-colors uppercase  flex items-center justify-center gap-2 disabled:opacity-50">
                             <Loader2 v-if="form.processing" class="w-3.5 h-3.5 animate-spin" />
                             {{ form.processing ? 'Processing' : 'Register Unit' }}
-                        </button>
+                        </Button>
                     </form>
                 </div>
             </div>
