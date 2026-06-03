@@ -3,8 +3,9 @@ import { ref, computed } from 'vue';
 import { Link, Head, usePage } from '@inertiajs/vue3'; 
 import AppLayout from '@/layouts/AppLayout.vue';
 import { 
-    History, Download, Eye, PackagePlus, PackageMinus, XCircle, User, Building2, Box, Calendar, Filter, ArrowUpDown
+    Search, Download, Eye, PackagePlus, PackageMinus, XCircle, User, Building2, Box, Calendar, Filter, ArrowUpDown
 } from 'lucide-vue-next';
+import TitleHeader from '@/components/ui/title-header/Header.vue';
 
 const page = usePage();
 const breadcrumbs = [{ title: "Transactions", href: "#" }];
@@ -16,6 +17,7 @@ const props = defineProps({
     categories: { type: Array, default: () => [] }
 });
 
+const searchQuery = ref('');
 const activeTab = ref('all');
 const filterDept = ref('');
 const filterCategory = ref('');
@@ -58,7 +60,57 @@ const filteredTransactions = computed(() => {
         if (sortBy.value === 'za') return (b.item?.name || '').localeCompare(a.item?.name || '');
         return 0;
     });
+
+    // --- Search Filter Logic ---
+    if (searchQuery.value) {
+        const q = searchQuery.value.toLowerCase();
+        result = result.filter(t => 
+            (t.id && t.id.toString().includes(q)) ||
+            (t.item?.name && t.item.name.toLowerCase().includes(q)) ||
+            (t.item?.product_code && t.item.product_code.toLowerCase().includes(q)) ||
+            (t.department && t.department.toLowerCase().includes(q)) ||
+            (t.received_by && t.received_by.toLowerCase().includes(q)) ||
+            (t.released_to && t.released_to.toLowerCase().includes(q)) ||
+            (t.note && t.note.toLowerCase().includes(q))
+        );
+    }
+
+    // Tab Filters
+    if (activeTab.value === 'in') result = result.filter(t => t.type === 'In');
+    else if (activeTab.value === 'out') result = result.filter(t => t.type === 'Out');
+
+    // Dropdown Filters
+    if (filterDept.value) result = result.filter(t => t.department === filterDept.value);
+    if (filterCategory.value) result = result.filter(t => t.item?.category_id == filterCategory.value);
+
+    // Date Filters
+    if (startDate.value && endDate.value) {
+        const start = new Date(startDate.value).setHours(0,0,0,0);
+        const end = new Date(endDate.value).setHours(23,59,59,999);
+        result = result.filter(t => {
+            const trxDate = new Date(t.created_at).getTime();
+            return trxDate >= start && trxDate <= end;
+        });
+    }
+
+    // Sorting
+    return result.sort((a, b) => {
+        if (sortBy.value === 'latest' || sortBy.value === 'oldest') {
+            const dateA = new Date(a.created_at).getTime();
+            const dateB = new Date(b.created_at).getTime();
+            
+            if (dateA !== dateB) {
+                return sortBy.value === 'latest' ? dateB - dateA : dateA - dateB;
+            }
+            return sortBy.value === 'latest' ? b.id - a.id : a.id - b.id;
+        }
+        if (sortBy.value === 'az') return (a.item?.name || '').localeCompare(b.item?.name || '');
+        if (sortBy.value === 'za') return (b.item?.name || '').localeCompare(a.item?.name || '');
+        return 0;
+    });
 });
+
+
 
 const exportDailyInReport = () => {
     if (!startDate.value) return;
@@ -88,13 +140,20 @@ const formatDate = (dateString) => {
 };
 
 const resetFilters = () => { 
-    filterDept.value = ''; filterCategory.value = ''; startDate.value = ''; endDate.value = ''; activeTab.value = 'all'; sortBy.value = 'latest';
+    searchQuery.value = ''; // Reset search
+    filterDept.value = ''; 
+    filterCategory.value = ''; 
+    startDate.value = ''; 
+    endDate.value = ''; 
+    activeTab.value = 'all'; 
+    sortBy.value = 'latest';
 };
 </script>
 
 <template>
     <Head title="Transaction History" />
-    <AppLayout :breadcrumbs="breadcrumbs">            
+    <AppLayout :breadcrumbs="breadcrumbs">
+        <!--
         <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
             <div class="flex items-center gap-3">
                 <div class="p-2.5 bg-purple-600 rounded-xl text-white shadow-lg shadow-slate-200"><History class="w-5 h-5" /></div>
@@ -121,7 +180,19 @@ const resetFilters = () => {
                 </template>
             </div>
         </div>
+        -->
+        <div class="flex justify-between items-center gap-2 border-b border-slate-200 pb-6 mb-6">
+            <TitleHeader title="Transaction History" description="List of Inventory Transactions" />
 
+            <div class="space-x-2 flex items-center">
+                    <div class="relative w-full max-w-xs">
+                    <Search class="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input v-model="searchQuery" type="text" placeholder="Search"
+                        class="w-full pl-9 h-9"/>
+                </div>
+            </div>            
+        </div>
+        
         <!-- Filters Section -->
         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 bg-slate-50 p-4 rounded-2xl border border-slate-200 mt-0">
             <div class="bg-white p-1 rounded-lg border border-slate-200 flex h-9 shadow-sm">

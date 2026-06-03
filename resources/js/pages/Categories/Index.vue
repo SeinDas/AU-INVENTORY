@@ -14,6 +14,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Trash2, Plus, FolderTree, Pencil, X, Check, CornerDownRight, Layers, Tag, GitBranch } from 'lucide-vue-next';
 import { useToast } from 'vue-toastification';
+import { Button } from '@/components/ui/button';
 
 const toast = useToast();
 const props = defineProps({ 
@@ -163,14 +164,15 @@ const executeDelete = () => {
                             class="w-full border border-slate-300 rounded-sm px-3 py-2 text-sm focus:ring-1 focus:ring-purple-600 focus:border-purple-600" 
                             required 
                         />
-                        <button 
-                            type="submit" 
+                        <Button 
+                            type="submit"
+                            variant="default" 
                             :disabled="mainForm.processing" 
-                            class="w-full bg-slate-800 hover:bg-slate-900 text-white px-4 py-2 text-xs font-bold rounded-sm transition-colors uppercase flex items-center justify-center gap-2"
+                            class="w-full text-xs font-bold uppercase"
                         >
-                            <Plus class="w-3.5 h-3.5" />
+                            <Plus class="w-3.5 h-3.5 mr-2" />
                             {{ mainForm.processing ? 'Saving...' : 'Add Main Category' }}
-                        </button>
+                        </Button>
                     </form>
                 </div>
 
@@ -196,12 +198,13 @@ const executeDelete = () => {
                             class="w-full border border-slate-300 rounded-sm px-3 py-2 text-sm focus:ring-1 focus:ring-purple-600 focus:border-purple-600" 
                             required 
                         />
-                        <button 
-                            type="submit" 
+                        <Button 
+                            type="submit"
+                            variant="default" 
                             :disabled="subForm.processing || !subForm.parent_id" 
-                            class="w-full bg-purple-700 hover:bg-purple-700 text-white px-4 py-2.5 text-xs font-bold rounded-sm transition-colors uppercase  flex items-center justify-center gap-2 disabled:opacity-50"
+                            class="w-full text-xs font-bold uppercase"
                         >
-                            <Plus class="w-3.5 h-3.5" />
+                            <Plus class="w-3.5 h-3.5 mr-2" />
                             {{ subForm.processing ? 'Saving...' : 'Add Sub-Category' }}
                         </button>
                     </form>
