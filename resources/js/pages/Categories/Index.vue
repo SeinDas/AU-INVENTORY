@@ -15,6 +15,8 @@ import {
 import { Trash2, Plus, FolderTree, Pencil, X, Check, CornerDownRight, Layers, Tag, GitBranch } from 'lucide-vue-next';
 import { useToast } from 'vue-toastification';
 import { Button } from '@/components/ui/button';
+import TitleHeader from '@/components/ui/title-header/Header.vue';
+
 
 const toast = useToast();
 const props = defineProps({ 
@@ -125,10 +127,7 @@ const executeDelete = () => {
     <Head title="Classifications" />
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="flex items-center justify-between border-b border-slate-200 pb-5 mb-6">
-            <div>
-                <h1 class="text-2xl font-bold text-slate-900 tracking-tight">Asset Classifications</h1>
-                <p class="text-sm text-slate-500 italic mt-1">Manage organizational groupings and their sub-categories.</p>
-            </div>
+            <TitleHeader title="Asset Classifications" description="Manage organizational groupings and their sub-categories." />
             <FolderTree class="w-8 h-8 text-slate-300" />
         </div>
 

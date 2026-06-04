@@ -10,19 +10,16 @@ use Barryvdh\DomPDF\Facade\Pdf;
 
 class TransactionController extends Controller
 {
-    /**
-     * Optimized Index: Pinagsamang History ng In at Out
-     */
     public function index()
     {
         // Query the unified Transaction table
         $transactions = Transaction::with([
-                'item:id,name,category_id', 
+                'item:id,name,category_id,product_code', 
                 'item.category:id,name',
                 'user:id,name' // Assuming you want the user who recorded it
             ])
             ->latest()
-            ->limit(200) // Increased limit since we aren't fetching 100 of each separately
+            ->limit(200)
             ->get()
             ->map(fn($record) => [
                 // Note: If you added 'ref_no' to your Transaction migration, change $record->id to $record->ref_no
@@ -49,7 +46,7 @@ class TransactionController extends Controller
 
         return Inertia::render('Transactions/Index', [
             'transactions' => $transactions,
-            'departments' => Department::where('is_active', true)->orderBy('name')->get(['id', 'name']),
+            'departments' => Department::where('is_active', true)->orderBy('department_name')->get(['id', 'department_name']),
             'categories' => Category::orderBy('name')->get(['id', 'name']),
         ]);
     }
@@ -65,7 +62,7 @@ class TransactionController extends Controller
     {
         return Inertia::render('Transactions/StockOut', [
             'items' => Item::where('quantity', '>', 0)->orderBy('name')->get(['id', 'name', 'quantity', 'min_stock', 'product_code']),
-            'departments' => Department::where('is_active', true)->orderBy('name')->get(['id', 'name']),
+            'departments' => Department::where('is_active', true)->orderBy('department_name')->get(['id', 'department_name']),
         ]);
     }
 

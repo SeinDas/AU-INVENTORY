@@ -6,6 +6,8 @@ import {
     Search, Download, Eye, PackagePlus, PackageMinus, XCircle, User, Building2, Box, Calendar, Filter, ArrowUpDown
 } from 'lucide-vue-next';
 import TitleHeader from '@/components/ui/title-header/Header.vue';
+import { Input } from '@/components/ui/input';
+
 
 const page = usePage();
 const breadcrumbs = [{ title: "Transactions", href: "#" }];
@@ -30,38 +32,7 @@ const selectedTransaction = ref(null);
 const filteredTransactions = computed(() => {
     let result = [...props.transactions];
 
-    if (activeTab.value === 'in') result = result.filter(t => t.type === 'In');
-    else if (activeTab.value === 'out') result = result.filter(t => t.type === 'Out');
-
-    if (filterDept.value) result = result.filter(t => t.department === filterDept.value);
-    if (filterCategory.value) result = result.filter(t => t.item?.category_id == filterCategory.value);
-
-    if (startDate.value && endDate.value) {
-        const start = new Date(startDate.value).setHours(0,0,0,0);
-        const end = new Date(endDate.value).setHours(23,59,59,999);
-        result = result.filter(t => {
-            const trxDate = new Date(t.created_at).getTime();
-            return trxDate >= start && trxDate <= end;
-        });
-    }
-
-    return result.sort((a, b) => {
-        if (sortBy.value === 'latest' || sortBy.value === 'oldest') {
-            const dateA = new Date(a.created_at).getTime();
-            const dateB = new Date(b.created_at).getTime();
-            
-            if (dateA !== dateB) {
-                return sortBy.value === 'latest' ? dateB - dateA : dateA - dateB;
-            }
-            // FIXED: Use numeric `id` for fallback sorting instead of string `raw_id`
-            return sortBy.value === 'latest' ? b.id - a.id : a.id - b.id;
-        }
-        if (sortBy.value === 'az') return (a.item?.name || '').localeCompare(b.item?.name || '');
-        if (sortBy.value === 'za') return (b.item?.name || '').localeCompare(a.item?.name || '');
-        return 0;
-    });
-
-    // --- Search Filter Logic ---
+    // 1. Search Filter
     if (searchQuery.value) {
         const q = searchQuery.value.toLowerCase();
         result = result.filter(t => 
@@ -75,15 +46,12 @@ const filteredTransactions = computed(() => {
         );
     }
 
-    // Tab Filters
     if (activeTab.value === 'in') result = result.filter(t => t.type === 'In');
     else if (activeTab.value === 'out') result = result.filter(t => t.type === 'Out');
 
-    // Dropdown Filters
     if (filterDept.value) result = result.filter(t => t.department === filterDept.value);
     if (filterCategory.value) result = result.filter(t => t.item?.category_id == filterCategory.value);
 
-    // Date Filters
     if (startDate.value && endDate.value) {
         const start = new Date(startDate.value).setHours(0,0,0,0);
         const end = new Date(endDate.value).setHours(23,59,59,999);
@@ -93,7 +61,6 @@ const filteredTransactions = computed(() => {
         });
     }
 
-    // Sorting
     return result.sort((a, b) => {
         if (sortBy.value === 'latest' || sortBy.value === 'oldest') {
             const dateA = new Date(a.created_at).getTime();
@@ -253,9 +220,9 @@ const resetFilters = () => {
                                     </button>
 
                                     <!-- Using raw_id ('in-1', 'out-2') for the PDF export route 
-                                    <a v-if="userRole !== 'viewer'" :href="route('web.transactions.export-pdf', trx.raw_id)" target="_blank" class="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg">
-                                        <Download class="w-4 h-4" />
-                                    </a>
+                                        <a v-if="userRole !== 'viewer'" :href="route('web.transactions.export-pdf', trx.raw_id)" target="_blank" class="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg">
+                                            <Download class="w-4 h-4" />
+                                        </a>
                                     -->
                                 </div>
                             </td>
