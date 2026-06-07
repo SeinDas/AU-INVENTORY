@@ -35,7 +35,7 @@ class DashboardController extends Controller
                 ->limit(5)
                 ->get(),
             'low_stock_items' => Item::whereRaw('quantity <= min_stock')
-                ->with(['unit', 'categories'])
+                ->with(['unit', 'category'])
                 ->get(),
             'recent_transactions' => $recent_transactions,
         ];
