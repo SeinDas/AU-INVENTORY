@@ -7,6 +7,14 @@ import {
 } from 'lucide-vue-next';
 import TitleHeader from '@/components/ui/title-header/Header.vue';
 import { Input } from '@/components/ui/input';
+import { 
+    Table, 
+    TableBody, 
+    TableCell, 
+    TableHead, 
+    TableRow, 
+    TableHeader
+} from '@/components/ui/table';
 
 
 const page = usePage();
@@ -179,41 +187,41 @@ const resetFilters = () => {
 
         <div class="bg-white border border-slate-200 shadow-sm p-0 rounded-2xl overflow-hidden mt-0">
             <div class="overflow-x-auto"> 
-                <table class="w-full text-left border-separate border-spacing-0 min-w-[900px]">
-                    <thead>
-                        <tr class="bg-slate-50 text-slate-500 text-[10px] font-black uppercase">
-                            <th class="py-3 px-4 border-b border-slate-100">Ref / Date</th>
-                            <th class="py-3 px-4 border-b border-slate-100">Item Description</th> 
-                            <th class="py-3 px-4 border-b border-slate-100">Office / Dept</th>
-                            <th class="py-3 px-4 border-b border-slate-100">Personnel</th>
-                            <th class="py-3 px-4 text-center border-b border-slate-100">Qty</th>
-                            <th class="py-3 px-4 text-right border-b border-slate-100">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-slate-50">
-                        <tr v-for="trx in filteredTransactions" :key="trx.id" class="hover:bg-slate-50/50 transition-colors group">
-                            <td class="py-3 px-4 leading-tight">
-                                <span class="block text-[11px] font-black text-slate-700">#{{ trx.id }}</span>
-                                <span class="block text-[10px] font-bold text-slate-400 uppercase">{{ formatDate(trx.created_at) }}</span>
-                            </td>
-                            <td class="py-3 px-4 leading-tight">
-                                <span class="block font-bold text-slate-900 uppercase text-[12px] truncate">{{ trx.item?.name }}</span>
+                <Table>
+                    <TableHeader>
+                        <TableRow class=" uppercase">
+                            <TableHead>Ref / Date</TableHead>
+                            <TableHead>Item Description</TableHead>
+                            <TableHead>Office / Dept</TableHead>
+                            <TableHead>Personnel</TableHead>
+                            <TableHead>Qty</TableHead>
+                            <TableHead>Actions</TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        <TableRow v-for="trx in filteredTransactions" :key="trx.id" class="transition-colors group">
+                            <TableCell>
+                                <span class="font-black">#{{ trx.id }}</span>
+                                <span class="block text-[10px] font-bold text-slate-400">{{ formatDate(trx.created_at) }}</span>
+                            </TableCell>
+                            <TableCell>
+                                <span class="font-bold">{{ trx.item?.name }}</span>
                                 <span class="block text-[10px] font-mono text-slate-400">{{ trx.item?.product_code }}</span>
-                            </td>
-                            <td class="py-3 px-4">
+                            </TableCell>
+                            <TableCell>
                                 <span :class="trx.department ? 'text-emerald-600 bg-emerald-50' : 'text-slate-600 bg-slate-50'" class="text-[9px] font-black uppercase px-2 py-0.5 rounded border">
                                     {{ trx.department || 'N/A' }}
                                 </span>
-                            </td>
-                            <td class="py-3 px-4">
+                            </TableCell>
+                            <TableCell>
                                 <span class="text-[11px] text-slate-700 font-bold uppercase">{{ trx.received_by || trx.released_to || 'System' }}</span>
-                            </td>
-                            <td class="py-3 px-4 text-center">
+                            </TableCell>
+                            <TableCell class="py-3 px-4 text-center">
                                 <span :class="trx.type === 'In' ? 'text-emerald-600' : 'text-purple-600'" class="font-black text-[12px]">
                                     {{ trx.type === 'In' ? '+' : '-' }}{{ trx.quantity }}
                                 </span>
-                            </td>
-                            <td class="py-3 px-4 text-right">
+                            </TableCell>
+                            <TableCell>
                                 <div class="flex items-center justify-end gap-1 md:opacity-0 group-hover:opacity-100 transition-opacity">
                                     <button @click="openViewModal(trx)" class="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg">
                                         <Eye class="w-4 h-4" />
@@ -225,10 +233,10 @@ const resetFilters = () => {
                                         </a>
                                     -->
                                 </div>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+                            </TableCell>
+                        </TableRow>
+                    </TableBody>
+                </Table>
             </div>
         </div>
 
