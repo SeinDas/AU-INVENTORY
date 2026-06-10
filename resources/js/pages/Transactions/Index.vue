@@ -1,27 +1,21 @@
 <script setup>
 import { ref, computed } from 'vue';
-import { Link, Head, usePage } from '@inertiajs/vue3'; 
+import { Link, Head, usePage } from '@inertiajs/vue3';
 import AppLayout from '@/layouts/AppLayout.vue';
-import { 
-    Search, Download, Eye, PackagePlus, PackageMinus, XCircle, User, Building2, Box, Calendar, Filter, ArrowUpDown
+import {
+    Search, Download, PackagePlus, PackageMinus, XCircle, Calendar, Filter, ArrowUpDown, Building2, ChevronLeft, ChevronRight
 } from 'lucide-vue-next';
 import TitleHeader from '@/components/ui/title-header/Header.vue';
 import { Input } from '@/components/ui/input';
-import { 
-    Table, 
-    TableBody, 
-    TableCell, 
-    TableHead, 
-    TableRow, 
-    TableHeader
-} from '@/components/ui/table';
+import { Button } from '@/components/ui/button';
+import TransactionTable from './TransactionTable.vue';
 
 
 const page = usePage();
 const breadcrumbs = [{ title: "Transactions", href: "#" }];
 const userRole = computed(() => (page.props.auth.user?.role || 'Viewer').toLowerCase());
 
-const props = defineProps({ 
+const props = defineProps({
     transactions: { type: Array, default: () => [] },
     departments: { type: Array, default: () => [] },
     categories: { type: Array, default: () => [] }
@@ -34,8 +28,8 @@ const filterCategory = ref('');
 const startDate = ref('');
 const endDate = ref('');
 const sortBy = ref('latest');
-const isModalOpen = ref(false);
-const selectedTransaction = ref(null);
+const currentPage = ref(1);
+const itemsPerPage = 10;
 
 const filteredTransactions = computed(() => {
     let result = [...props.transactions];
@@ -43,7 +37,7 @@ const filteredTransactions = computed(() => {
     // 1. Search Filter
     if (searchQuery.value) {
         const q = searchQuery.value.toLowerCase();
-        result = result.filter(t => 
+        result = result.filter(t =>
             (t.id && t.id.toString().includes(q)) ||
             (t.item?.name && t.item.name.toLowerCase().includes(q)) ||
             (t.item?.product_code && t.item.product_code.toLowerCase().includes(q)) ||
@@ -73,7 +67,7 @@ const filteredTransactions = computed(() => {
         if (sortBy.value === 'latest' || sortBy.value === 'oldest') {
             const dateA = new Date(a.created_at).getTime();
             const dateB = new Date(b.created_at).getTime();
-            
+
             if (dateA !== dateB) {
                 return sortBy.value === 'latest' ? dateB - dateA : dateA - dateB;
             }
@@ -84,6 +78,34 @@ const filteredTransactions = computed(() => {
         return 0;
     });
 });
+
+const totalPages = computed(() => {
+    return Math.ceil(filteredTransactions.value.length / itemsPerPage);
+});
+
+const paginatedTransactions = computed(() => {
+    const start = (currentPage.value - 1) * itemsPerPage;
+    const end = start + itemsPerPage;
+    return filteredTransactions.value.slice(start, end);
+});
+
+const pageInfo = computed(() => {
+    const start = (currentPage.value - 1) * itemsPerPage + 1;
+    const end = Math.min(currentPage.value * itemsPerPage, filteredTransactions.value.length);
+    return `Showing ${start} to ${end} of ${filteredTransactions.value.length} transactions`;
+});
+
+const previousPage = () => {
+    if (currentPage.value > 1) {
+        currentPage.value--;
+    }
+};
+
+const nextPage = () => {
+    if (currentPage.value < totalPages.value) {
+        currentPage.value++;
+    }
+};
 
 
 
@@ -97,32 +119,22 @@ const exportDepartmentReport = () => {
     window.open(route('web.transactions.export-by-department', { department: filterDept.value }), '_blank');
 };
 
-const openViewModal = (trx) => { 
-    selectedTransaction.value = trx; 
-    isModalOpen.value = true; 
-};
-
-const closeViewModal = () => { 
-    isModalOpen.value = false; 
-    selectedTransaction.value = null; 
-};
-
-const formatDate = (dateString) => {
-    if (!dateString) return 'N/A';
-    return new Date(dateString).toLocaleDateString('en-US', { 
-        year: 'numeric', month: 'short', day: 'numeric' 
-    });
-};
-
-const resetFilters = () => { 
-    searchQuery.value = ''; // Reset search
-    filterDept.value = ''; 
-    filterCategory.value = ''; 
-    startDate.value = ''; 
-    endDate.value = ''; 
-    activeTab.value = 'all'; 
+const resetFilters = () => {
+    searchQuery.value = '';
+    filterDept.value = '';
+    filterCategory.value = '';
+    startDate.value = '';
+    endDate.value = '';
+    activeTab.value = 'all';
     sortBy.value = 'latest';
+    currentPage.value = 1;
 };
+
+const tabs = [
+    { value: 'all', label: 'All', bgColor: 'bg-purple-600' },
+    { value: 'in', label: 'In', bgColor: 'bg-emerald-600' },
+    { value: 'out', label: 'Out', bgColor: 'bg-slate-900' }
+];
 </script>
 
 <template>
@@ -171,13 +183,31 @@ const resetFilters = () => {
         <!-- Filters Section -->
         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 bg-slate-50 p-4 rounded-2xl border border-slate-200 mt-0">
             <div class="bg-white p-1 rounded-lg border border-slate-200 flex h-9 shadow-sm">
-                <button @click="activeTab = 'all'" :class="activeTab === 'all' ? 'bg-purple-600 text-white' : 'text-slate-400 hover:bg-slate-50'" class="flex-1 text-[9px] font-black uppercase rounded-md transition-all">All</button>
-                <button @click="activeTab = 'in'" :class="activeTab === 'in' ? 'bg-emerald-600 text-white' : 'text-slate-400 hover:bg-slate-50'" class="flex-1 text-[9px] font-black uppercase rounded-md transition-all">In</button>
-                <button @click="activeTab = 'out'" :class="activeTab === 'out' ? 'bg-slate-900 text-white' : 'text-slate-400 hover:bg-slate-50'" class="flex-1 text-[9px] font-black uppercase rounded-md transition-all">Out</button>
+                <button v-for="tab in tabs" :key="tab.value" @click="activeTab = tab.value" :class="activeTab === tab.value ? `${tab.bgColor} text-white` : 'text-slate-400 hover:bg-slate-50'" class="flex-1 text-[9px] font-black uppercase rounded-md transition-all">{{ tab.label }}</button>
             </div>
-            <div class="relative"><Building2 class="absolute left-3 top-2.5 w-3.5 h-3.5 text-slate-400" /><select v-model="filterDept" class="w-full h-9 pl-9 pr-3 bg-white border-slate-200 rounded-lg text-[10px] font-bold uppercase focus:ring-slate-900"><option value="">Filter Dept</option><option v-for="dept in departments" :key="dept.id" :value="dept.department_name">{{ dept.department_name }}</option></select></div>
-            <div class="relative"><Filter class="absolute left-3 top-2.5 w-3.5 h-3.5 text-slate-400" /><select v-model="filterCategory" class="w-full h-9 pl-9 pr-3 bg-white border-slate-200 rounded-lg text-[10px] font-bold uppercase focus:ring-slate-900"><option value="">All Categories</option><option v-for="cat in categories" :key="cat.id" :value="cat.id">{{ cat.name }}</option></select></div>
-            <div class="relative"><ArrowUpDown class="absolute left-3 top-2.5 w-3.5 h-3.5 text-slate-400" /><select v-model="sortBy" class="w-full h-9 pl-9 pr-3 bg-white border-slate-200 rounded-lg text-[10px] font-bold uppercase focus:ring-slate-900"><option value="latest">Latest First</option><option value="oldest">Oldest First</option><option value="az">Item (A-Z)</option><option value="za">Item (Z-A)</option></select></div>
+            <div class="relative">
+                <Building2 class="absolute left-3 top-2.5 w-3.5 h-3.5 text-slate-400" />
+                <select v-model="filterDept" class="w-full h-9 pl-9 pr-3 bg-white border-slate-200 rounded-lg text-[10px] font-bold uppercase focus:ring-slate-900">
+                    <option value="">Filter Dept</option>
+                    <option v-for="dept in departments" :key="dept.id" :value="dept.department_name">{{ dept.department_name }}</option>
+                </select>
+            </div>
+            <div class="relative">
+                <Filter class="absolute left-3 top-2.5 w-3.5 h-3.5 text-slate-400" />
+                <select v-model="filterCategory" class="w-full h-9 pl-9 pr-3 bg-white border-slate-200 rounded-lg text-[10px] font-bold uppercase focus:ring-slate-900">
+                    <option value="">All Categories</option>
+                    <option v-for="cat in categories" :key="cat.id" :value="cat.id">{{ cat.name }}</option>
+                </select>
+            </div>
+            <div class="relative">
+                <ArrowUpDown class="absolute left-3 top-2.5 w-3.5 h-3.5 text-slate-400" />
+                <select v-model="sortBy" class="w-full h-9 pl-9 pr-3 bg-white border-slate-200 rounded-lg text-[10px] font-bold uppercase focus:ring-slate-900">
+                    <option value="latest">Latest First</option>
+                    <option value="oldest">Oldest First</option>
+                    <option value="az">Item (A-Z)</option>
+                    <option value="za">Item (Z-A)</option>
+                </select>
+            </div>
             <div class="sm:col-span-2 flex gap-2 items-center">
                 <div class="flex-1 relative"><Calendar class="absolute left-2.5 top-2.5 w-3 h-3 text-slate-400" /><input type="date" v-model="startDate" class="w-full h-9 pl-8 pr-2 bg-white border-slate-200 rounded-lg text-[10px] font-bold"></div>
                 <div class="flex-1 relative"><Calendar class="absolute left-2.5 top-2.5 w-3 h-3 text-slate-400" /><input type="date" v-model="endDate" class="w-full h-9 pl-8 pr-2 bg-white border-slate-200 rounded-lg text-[10px] font-bold"></div>
@@ -185,128 +215,33 @@ const resetFilters = () => {
             </div>
         </div>
 
-        <div class="bg-white border border-slate-200 shadow-sm p-0 rounded-2xl overflow-hidden mt-0">
-            <div class="overflow-x-auto"> 
-                <Table>
-                    <TableHeader>
-                        <TableRow class=" uppercase">
-                            <TableHead>Ref / Date</TableHead>
-                            <TableHead>Item Description</TableHead>
-                            <TableHead>Office / Dept</TableHead>
-                            <TableHead>Personnel</TableHead>
-                            <TableHead>Qty</TableHead>
-                            <TableHead>Actions</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        <TableRow v-for="trx in filteredTransactions" :key="trx.id" class="transition-colors group">
-                            <TableCell>
-                                <span class="font-black">#{{ trx.id }}</span>
-                                <span class="block text-[10px] font-bold text-slate-400">{{ formatDate(trx.created_at) }}</span>
-                            </TableCell>
-                            <TableCell>
-                                <span class="font-bold">{{ trx.item?.name }}</span>
-                                <span class="block text-[10px] font-mono text-slate-400">{{ trx.item?.product_code }}</span>
-                            </TableCell>
-                            <TableCell>
-                                <span :class="trx.department ? 'text-emerald-600 bg-emerald-50' : 'text-slate-600 bg-slate-50'" class="text-[9px] font-black uppercase px-2 py-0.5 rounded border">
-                                    {{ trx.department || 'N/A' }}
-                                </span>
-                            </TableCell>
-                            <TableCell>
-                                <span class="text-[11px] text-slate-700 font-bold uppercase">{{ trx.received_by || trx.released_to || 'System' }}</span>
-                            </TableCell>
-                            <TableCell class="py-3 px-4 text-center">
-                                <span :class="trx.type === 'In' ? 'text-emerald-600' : 'text-purple-600'" class="font-black text-[12px]">
-                                    {{ trx.type === 'In' ? '+' : '-' }}{{ trx.quantity }}
-                                </span>
-                            </TableCell>
-                            <TableCell>
-                                <div class="flex items-center justify-end gap-1 md:opacity-0 group-hover:opacity-100 transition-opacity">
-                                    <button @click="openViewModal(trx)" class="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg">
-                                        <Eye class="w-4 h-4" />
-                                    </button>
+        <TransactionTable :transactions="paginatedTransactions" :userRole="userRole" />
 
-                                    <!-- Using raw_id ('in-1', 'out-2') for the PDF export route 
-                                        <a v-if="userRole !== 'viewer'" :href="route('web.transactions.export-pdf', trx.raw_id)" target="_blank" class="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg">
-                                            <Download class="w-4 h-4" />
-                                        </a>
-                                    -->
-                                </div>
-                            </TableCell>
-                        </TableRow>
-                    </TableBody>
-                </Table>
+        <!-- Pagination Controls -->
+        <div class="flex items-center justify-between mt-6">
+            <div class="text-sm text-slate-600">
+                {{ pageInfo }}
             </div>
-        </div>
-
-        <div v-if="isModalOpen" 
-            class="fixed inset-0 z-[999] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm"
-            @click.self="closeViewModal">
-            
-            <div class="bg-white w-full max-w-lg rounded-3xl shadow-2xl overflow-hidden border border-slate-200">
-                <div class="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
-                    <div class="flex items-center gap-3">
-                        <div :class="selectedTransaction?.type === 'In' ? 'bg-emerald-100 text-emerald-600' : 'bg-purple-100 text-purple-600'" class="p-2 rounded-xl">
-                            <History class="w-5 h-5" />
-                        </div>
-                        <div>
-                            <h3 class="text-sm font-black text-slate-900 uppercase tracking-tight">Log Details</h3>
-                            <p class="text-[10px] text-slate-400 font-bold uppercase">Ref: {{ selectedTransaction?.id }}</p>
-                        </div>
-                    </div>
-                    <button @click="closeViewModal" class="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-colors">
-                        <XCircle class="w-5 h-5" />
-                    </button>
+            <div class="flex gap-2">
+                <Button
+                    @click="previousPage"
+                    :disabled="currentPage === 1"
+                    variant="outline"
+                    size="sm">
+                    <ChevronLeft class="w-4 h-4 mr-1" />
+                    Previous
+                </Button>
+                <div class="flex items-center gap-2 px-3 text-sm text-slate-600">
+                    Page <span class="font-semibold">{{ currentPage }}</span> of <span class="font-semibold">{{ totalPages }}</span>
                 </div>
-
-                <div class="p-6 space-y-6">
-                    <div class="flex gap-4 p-4 bg-slate-50 rounded-2xl border border-slate-100">
-                        <div class="p-3 bg-white rounded-xl shadow-sm border border-slate-200"><Box class="w-6 h-6 text-slate-400" /></div>
-                        <div>
-                            <p class="text-[10px] text-slate-400 font-black uppercase mb-1">Item Information</p>
-                            <h4 class="text-xs font-black text-slate-900 uppercase">{{ selectedTransaction?.item?.name }}</h4>
-                            <p class="text-[10px] font-mono text-slate-500">{{ selectedTransaction?.item?.product_code }}</p>
-                        </div>
-                    </div>
-
-                    <div class="grid grid-cols-2 gap-6">
-                        <div class="space-y-1">
-                            <p class="text-[9px] text-slate-400 font-black uppercase flex items-center gap-1.5"><Building2 class="w-3 h-3" /> Department</p>
-                            <p class="text-[11px] font-bold text-slate-700 uppercase">{{ selectedTransaction?.department || 'N/A' }}</p>
-                        </div>
-                        <div class="space-y-1">
-                            <p class="text-[9px] text-slate-400 font-black uppercase flex items-center gap-1.5"><User class="w-3 h-3" /> Handler</p>
-                            <p class="text-[11px] font-bold text-slate-700 uppercase">{{ selectedTransaction?.received_by || selectedTransaction?.released_to || 'N/A' }}</p>
-                        </div>
-                        <div class="space-y-1">
-                            <p class="text-[9px] text-slate-400 font-black uppercase">Quantity</p>
-                            <p :class="selectedTransaction?.type === 'In' ? 'text-emerald-600' : 'text-purple-600'" class="text-lg font-black">
-                                {{ selectedTransaction?.type === 'In' ? '+' : '-' }}{{ selectedTransaction?.quantity }}
-                            </p>
-                        </div>
-                        <div class="space-y-1">
-                            <p class="text-[9px] text-slate-400 font-black uppercase">Date Recorded</p>
-                            <p class="text-[11px] font-bold text-slate-700 uppercase">{{ formatDate(selectedTransaction?.created_at) }}</p>
-                        </div>
-                    </div>
-
-                    <div v-if="selectedTransaction?.note" class="pt-4 border-t border-slate-100">
-                        <p class="text-[9px] text-slate-400 font-black uppercase mb-2">Remarks</p>
-                        <div class="p-3 bg-amber-50 border border-amber-100 rounded-xl text-[11px] text-amber-900 italic">"{{ selectedTransaction.note }}"</div>
-                    </div>
-                </div>
-                <div class="p-4 bg-slate-50 border-t border-slate-100 flex gap-2">
-                    <!--
-                    <a v-if="userRole !== 'viewer'" :href="route('web.transactions.export-pdf', selectedTransaction?.raw_id)" 
-                        target="_blank"
-                        class="flex-1 py-3 bg-purple-600 hover:bg-purple-700 text-white text-[10px] font-black rounded-xl uppercase  flex items-center justify-center gap-2 transition-all">
-                        <Download class="w-4 h-4" /> Download PDF
-                    </a>
-                    <button @click="closeViewModal" class="px-6 py-3 bg-white border border-slate-200 text-slate-500 text-[10px] font-black rounded-xl uppercase hover:bg-slate-100">Close</button>
-                    -->
-                    
-                </div>
+                <Button
+                    @click="nextPage"
+                    :disabled="currentPage === totalPages"
+                    variant="outline"
+                    size="sm">
+                    Next
+                    <ChevronRight class="w-4 h-4 ml-1" />
+                </Button>
             </div>
         </div>
     </AppLayout>
