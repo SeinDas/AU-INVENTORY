@@ -4,6 +4,7 @@ import AppLayout from '@/layouts/AppLayout.vue';
 import Card from '@/components/ui/card/Card.vue';
 import { Save, Loader2, Info } from 'lucide-vue-next';
 import { useToast } from 'vue-toastification';
+import { Button } from '@/components/ui/button';
 import { watch } from 'vue';
 import axios from 'axios';
 
@@ -14,6 +15,10 @@ const props = defineProps({
     subCategories: Array,
     units: Array
 });
+
+const labelClasses = "block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5";
+const inputClasses = "w-full border border-slate-300 rounded-sm px-3 py-2 text-sm focus:ring-1 focus:ring-purple-600 focus:border-purple-600 outline-none transition-colors";
+const errorClasses = "text-red-600 text-[11px] mt-1 font-semibold";
 
 const form = useForm({
     product_code: '',
@@ -27,29 +32,36 @@ const form = useForm({
     description: ''
 });
 
-// Watch the primary category to reset sub-category and clear product code
+const fetchProductCode = async () => {
+    if (!form.category_id) {
+        form.product_code = '';
+        return;
+    }
+
+    try {
+        const response = await axios.get(route('web.items.generate-code'), {
+            params: { 
+                category_id: form.category_id,
+                subcategory_id: form.subcategory_id || null 
+            }
+        });
+        form.product_code = response.data.next_code;
+    } catch (error) {
+        console.error("Code Gen Error:", error);
+        toast.error("Failed to generate product code.");
+    }
+};
+
 watch(() => form.category_id, () => {
-    form.subcategory_id = '';
-    form.product_code = '';
+    form.subcategory_id = ''; // This will trigger the next watcher automatically, but we can just fetch here directly if preferred.
+    fetchProductCode();
 });
 
-// Watch both fields to trigger the auto-generation logic
-watch([() => form.category_id, () => form.subcategory_id], async ([newCat, newSub]) => {
-    if (newCat) {
-        try {
-            const response = await axios.get(route('web.items.generate-code'), {
-                params: { 
-                    category_id: newCat,
-                    subcategory_id: newSub || null 
-                }
-            });
-            form.product_code = response.data.next_code;
-        } catch (error) {
-            console.error("Code Gen Error:", error);
-            toast.error("Failed to generate product code.");
-        }
-    } else {
-        form.product_code = ''; 
+// Handle Subcategory change specifically
+watch(() => form.subcategory_id, (newSub, oldSub) => {
+    // Only fetch if it's an actual change (prevents duplicate fetch when reset to '')
+    if (newSub !== oldSub && form.category_id) {
+        fetchProductCode();
     }
 });
 
@@ -95,113 +107,99 @@ const submit = () => {
                     
                     <form @submit.prevent="submit" class="p-6 space-y-5">
                         <div>
-                            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Item Name *</label>
-                            <input v-model="form.name" type="text" class="w-full border border-slate-300 rounded-sm px-3 py-2 text-sm focus:ring-1 focus:ring-purple-600 focus:border-purple-600 outline-none transition-colors" required />
-                            <div v-if="form.errors.name" class="text-red-600 text-[11px] mt-1 font-semibold">{{ form.errors.name }}</div>
+                            <label :class="labelClasses">Item Name *</label>
+                            <input v-model="form.name" type="text" :class="inputClasses" required />
+                            <div v-if="form.errors.name" :class="errorClasses">{{ form.errors.name }}</div>
                         </div>
 
                         <div>
-                            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Serial Number</label>
-                            <input 
-                                v-model="form.serial_no" 
-                                type="text" 
-                                class="w-full border border-slate-300 rounded-sm px-3 py-2 text-sm focus:ring-1 focus:ring-purple-600 focus:border-purple-600 outline-none transition-colors" 
-                                placeholder="Enter 0 if none"
-                            />
-                            <div v-if="form.errors.serial_no" class="text-red-600 text-[11px] mt-1 font-semibold">{{ form.errors.serial_no }}</div>
+                            <label :class="labelClasses">Serial Number</label>
+                            <input v-model="form.serial_no" type="text" :class="inputClasses" placeholder="Enter 0 if none" />
+                            <div v-if="form.errors.serial_no" :class="errorClasses">{{ form.errors.serial_no }}</div>
                         </div>
 
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
-                                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Category *</label>
-                                <select v-model="form.category_id" class="w-full border border-slate-300 rounded-sm px-3 py-2 text-sm focus:ring-1 focus:ring-purple-600 focus:border-purple-600 outline-none transition-colors bg-white" required>
+                                <label :class="labelClasses">Category *</label>
+                                <select v-model="form.category_id" :class="[inputClasses, 'bg-white']" required>
                                     <option value="">Select Category</option>
                                     <option v-for="cat in mainCategories" :key="cat.id" :value="cat.id">{{ cat.name }}</option>
                                 </select>
+                                <div v-if="form.errors.category_id" :class="errorClasses">{{ form.errors.category_id }}</div>
                             </div>
                             <div>
-                                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Sub-Category (Optional)</label>
+                                <label :class="labelClasses">Sub-Category (Optional)</label>
                                 <select 
                                     v-model="form.subcategory_id" 
                                     :disabled="!form.category_id"
-                                    class="w-full border border-slate-300 rounded-sm px-3 py-2 text-sm focus:ring-1 focus:ring-purple-600 focus:border-purple-600 outline-none transition-colors bg-white disabled:bg-slate-50" 
+                                    :class="[inputClasses, 'bg-white disabled:bg-slate-50']" 
                                 >
                                     <option value="">None</option>
                                     <option v-for="sub in subCategories" :key="sub.id" :value="sub.id">{{ sub.name }}</option>
                                 </select>
-                                <div v-if="form.errors.subcategory_id" class="text-red-600 text-[11px] mt-1 font-semibold">{{ form.errors.subcategory_id }}</div>
+                                <div v-if="form.errors.subcategory_id" :class="errorClasses">{{ form.errors.subcategory_id }}</div>
                             </div>
                         </div>
 
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
-                                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Product Code *</label>
+                                <label :class="labelClasses">Product Code *</label>
                                 <input 
                                     v-model="form.product_code" 
                                     type="text" 
                                     placeholder="Auto-generated"
-                                    class="w-full border border-slate-300 rounded-sm px-3 py-2 text-sm focus:ring-1 focus:ring-purple-600 focus:border-purple-600 outline-none transition-colors placeholder:text-slate-300 bg-slate-50" 
+                                    :class="[inputClasses, 'placeholder:text-slate-300 bg-slate-50']" 
                                     readonly
                                     required 
                                 />
-                                <div v-if="form.errors.product_code" class="text-red-600 text-[11px] mt-1 font-semibold">{{ form.errors.product_code }}</div>
+                                <div v-if="form.errors.product_code" :class="errorClasses">{{ form.errors.product_code }}</div>
                             </div>
                             <div>
-                                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Unit of Measure</label>
-                                <select v-model="form.unit_id" class="w-full border border-slate-300 rounded-sm px-3 py-2 text-sm focus:ring-1 focus:ring-purple-600 focus:border-purple-600 outline-none transition-colors bg-white">
+                                <label :class="labelClasses">Unit of Measure</label>
+                                <select v-model="form.unit_id" :class="[inputClasses, 'bg-white']">
                                     <option value="">Select Unit</option>
                                     <option v-for="unit in units" :key="unit.id" :value="unit.id">{{ unit.name }}</option>
                                 </select>
-                                <div v-if="form.errors.unit_id" class="text-red-600 text-[11px] mt-1 font-semibold">{{ form.errors.unit_id }}</div>
+                                <div v-if="form.errors.unit_id" :class="errorClasses">{{ form.errors.unit_id }}</div>
                             </div>
                         </div>
 
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
-                                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Initial Quantity</label>
-                                <input 
-                                    v-model="form.quantity" 
-                                    type="number" 
-                                    class="w-full border border-slate-300 rounded-sm px-3 py-2 text-sm focus:ring-1 focus:ring-purple-600 focus:border-purple-600 outline-none transition-colors" 
-                                    min="0"
-                                />
-                                <div v-if="form.errors.quantity" class="text-red-600 text-[11px] mt-1 font-semibold">{{ form.errors.quantity }}</div>
+                                <label :class="labelClasses">Initial Quantity</label>
+                                <input v-model="form.quantity" type="number" :class="inputClasses" min="0" />
+                                <div v-if="form.errors.quantity" :class="errorClasses">{{ form.errors.quantity }}</div>
                             </div>
                             <div>
-                                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Min. Stock Level</label>
-                                <input 
-                                    v-model="form.min_stock" 
-                                    type="number" 
-                                    placeholder="Alert at..."
-                                    class="w-full border border-slate-300 rounded-sm px-3 py-2 text-sm focus:ring-1 focus:ring-purple-600 focus:border-purple-600 outline-none transition-colors" 
-                                    min="0"
-                                />
-                                <div v-if="form.errors.min_stock" class="text-red-600 text-[11px] mt-1 font-semibold">{{ form.errors.min_stock }}</div>
+                                <label :class="labelClasses">Min. Stock Level</label>
+                                <input v-model="form.min_stock" type="number" placeholder="Alert at..." :class="inputClasses" min="0" />
+                                <div v-if="form.errors.min_stock" :class="errorClasses">{{ form.errors.min_stock }}</div>
                             </div>
                         </div>
 
                         <div>
-                            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Additional Description</label>
+                            <label :class="labelClasses">Additional Description</label>
                             <textarea 
                                 v-model="form.description" 
-                                class="w-full border border-slate-300 rounded-sm px-3 py-2 text-sm focus:ring-1 focus:ring-purple-600 focus:border-purple-600 outline-none transition-colors min-h-[100px]" 
+                                :class="[inputClasses, 'min-h-[100px]']" 
                                 placeholder="Enter asset details or serial numbers..."
                             ></textarea>
-                            <div v-if="form.errors.description" class="text-red-600 text-[11px] mt-1 font-semibold">{{ form.errors.description }}</div>
+                            <div v-if="form.errors.description" :class="errorClasses">{{ form.errors.description }}</div>
                         </div>
 
                         <div class="pt-4 flex items-center justify-end gap-3 border-t border-slate-100">
                             <Link :href="route('web.items.index')" class="text-sm font-semibold text-slate-500 hover:text-slate-800 transition-colors px-4">
                                 Cancel
                             </Link>
-                            <button 
-                                type="submit" 
+                            <Button 
+                                type="submit"
+                                variant="default"
                                 :disabled="form.processing" 
-                                class="bg-purple-900 hover:bg-slate-900 text-white px-6 py-2.5 text-sm font-bold rounded-sm shadow-sm transition-colors flex items-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
+                                class="flex items-center gap-2"
                             >
                                 <component :is="form.processing ? Loader2 : Save" class="w-4 h-4" :class="{'animate-spin': form.processing}" />
                                 {{ form.processing ? 'Processing...' : 'Register Item' }}
-                            </button>
+                            </Button>
                         </div>
                     </form>
                 </Card>

@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, watch } from 'vue';
 import { useForm, Head } from '@inertiajs/vue3';
 import AppLayout from '@/layouts/AppLayout.vue';
 import {
@@ -17,7 +17,6 @@ import { useToast } from 'vue-toastification';
 import { Button } from '@/components/ui/button';
 import TitleHeader from '@/components/ui/title-header/Header.vue';
 
-
 const toast = useToast();
 const props = defineProps({ 
     categories: { type: Array, default: () => [] }
@@ -25,15 +24,23 @@ const props = defineProps({
 
 const breadcrumbs = [{ title: "Asset Classifications", href: "#" }];
 
-const mainForm = useForm({ name: '', parent_id: null });
-const subForm = useForm({ name: '', parent_id: '' }); 
+const inputClass = "w-full border border-slate-300 rounded-sm px-3 py-2 text-sm focus:ring-1 focus:ring-purple-600 focus:border-purple-600 bg-white";
+const baseTabClass = "px-6 py-1.5 text-[11px] font-semibold uppercase tracking-wider rounded-md transition-all duration-200 flex items-center justify-center gap-2";
+
+const activeTab = ref('main');
+const categoryForm = useForm({ name: '', parent_id: '' });
 
 const editingId = ref(null);
 const editForm = useForm({ name: '' });
 
 const isDeleteDialogOpen = ref(false);
 const categoryToDelete = ref(null);
-const activeTab = ref('main');
+
+// Reset form when switching tabs to prevent accidental data mixing
+watch(activeTab, () => {
+    categoryForm.reset();
+    categoryForm.clearErrors();
+});
 
 const displayedCategories = computed(() => {
     const allCats = props.categories || [];
@@ -50,7 +57,6 @@ const displayedCategories = computed(() => {
             .filter(c => c.parent_id)
             .map(c => {
                 const parent = allCats.find(p => p.id === c.parent_id);
-                
                 return { 
                     ...c, 
                     isChild: true, 
@@ -60,24 +66,17 @@ const displayedCategories = computed(() => {
     }
 });
 
-const submitMain = () => {
-    mainForm.post(route('categories.store'), {
-        preserveScroll: true,
-        only: ['categories', 'flash'], 
-        onSuccess: () => {
-            mainForm.reset();
-            toast.success("Main category added!");
-        },
-    });
-};
+// Unified Submission Handler
+const submitCategory = () => {
+    if (activeTab.value === 'main') categoryForm.parent_id = null;
 
-const submitSub = () => {
-    subForm.post(route('categories.store'), {
+    categoryForm.post(route('categories.store'), {
         preserveScroll: true,
         only: ['categories', 'flash'], 
         onSuccess: () => {
-            subForm.reset();
-            toast.success("Sub-category added!");
+            categoryForm.reset();
+            const type = activeTab.value === 'main' ? 'Main category' : 'Sub-category';
+            toast.success(`${type} added successfully!`);
         },
     });
 };
@@ -110,7 +109,8 @@ const confirmDeleteCategory = (id) => {
 
 const executeDelete = () => {
     if (categoryToDelete.value) {
-        mainForm.delete(route('categories.destroy', categoryToDelete.value), {
+        // We can utilize categoryForm to trigger the delete request
+        categoryForm.delete(route('categories.destroy', categoryToDelete.value), {
             preserveScroll: true,
             only: ['categories', 'flash'],
             onSuccess: () => {
@@ -135,54 +135,31 @@ const executeDelete = () => {
             <div class="inline-flex p-1 space-x-1 bg-slate-50 border border-slate-200 rounded-lg shadow-sm">
                 <button
                     @click="activeTab = 'main'"
-                    :class="activeTab === 'main' ? 'bg-white shadow-sm text-slate-700' : 'text-slate-500 hover:text-slate-700'"
-                    class="px-6 py-1.5 text-[11px] font-semibold uppercase tracking-wider rounded-md transition-all duration-200 flex items-center justify-center gap-2"
+                    :class="[baseTabClass, activeTab === 'main' ? 'bg-white shadow-sm text-slate-700' : 'text-slate-500 hover:text-slate-700']"
                 >
                     <Tag class="w-3.5 h-3.5" :class="activeTab === 'main' ? 'text-slate-600' : 'text-slate-400'" /> MAIN
                 </button>
                 <button
                     @click="activeTab = 'sub'"
-                    :class="activeTab === 'sub' ? 'bg-white shadow-sm text-amber-600' : 'text-slate-500 hover:text-slate-700'"
-                    class="px-6 py-1.5 text-[11px] font-semibold uppercase tracking-wider rounded-md transition-all duration-200 flex items-center justify-center gap-2"
+                    :class="[baseTabClass, activeTab === 'sub' ? 'bg-white shadow-sm text-amber-600' : 'text-slate-500 hover:text-slate-700']"
                 >
                     <GitBranch class="w-3.5 h-3.5" :class="activeTab === 'sub' ? 'text-amber-500' : 'text-slate-400'" /> SUB-CATEGORY
                 </button>
             </div>
         </div>
+
         <div class="grid grid-cols-1 md:grid-cols-12 gap-6">
             <div class="md:col-span-4 space-y-6">
-                <div v-if="activeTab === 'main'" class="bg-white border border-slate-200 shadow-sm rounded-lg p-5">
+                <div class="bg-white border border-slate-200 shadow-sm rounded-lg p-5">
                     <h3 class="text-xs font-bold text-slate-800 uppercase mb-4 flex items-center gap-2">
-                        <Tag class="w-3.5 h-3.5 text-purple-600" /> New Main Category
+                        <component :is="activeTab === 'main' ? Tag : GitBranch" class="w-3.5 h-3.5" :class="activeTab === 'main' ? 'text-purple-600' : 'text-amber-500'" />
+                        New {{ activeTab === 'main' ? 'Main Category' : 'Sub-Category' }}
                     </h3>
-                    <form @submit.prevent="submitMain" class="space-y-3">
-                        <input 
-                            v-model="mainForm.name" 
-                            type="text" 
-                            placeholder="e.g., Electronics" 
-                            class="w-full border border-slate-300 rounded-sm px-3 py-2 text-sm focus:ring-1 focus:ring-purple-600 focus:border-purple-600" 
-                            required 
-                        />
-                        <Button 
-                            type="submit"
-                            variant="default" 
-                            :disabled="mainForm.processing" 
-                            class="w-full text-xs font-bold uppercase"
-                        >
-                            <Plus class="w-3.5 h-3.5 mr-2" />
-                            {{ mainForm.processing ? 'Saving...' : 'Add Main Category' }}
-                        </Button>
-                    </form>
-                </div>
-
-                <div v-if="activeTab === 'sub'" class="bg-white border border-slate-200 shadow-sm rounded-lg p-5">
-                    <h3 class="text-xs font-bold text-slate-800 uppercase mb-4 flex items-center gap-2">
-                        <GitBranch class="w-3.5 h-3.5 text-amber-500" /> New Sub-Category
-                    </h3>
-                    <form @submit.prevent="submitSub" class="space-y-3">
+                    <form @submit.prevent="submitCategory" class="space-y-3">
                         <select 
-                            v-model="subForm.parent_id"
-                            class="w-full border border-slate-300 rounded-sm px-3 py-2 text-sm bg-white"
+                            v-if="activeTab === 'sub'"
+                            v-model="categoryForm.parent_id"
+                            :class="inputClass"
                             required
                         >
                             <option value="" disabled>Select Main Category</option>
@@ -191,21 +168,21 @@ const executeDelete = () => {
                             </option>
                         </select>
                         <input 
-                            v-model="subForm.name" 
+                            v-model="categoryForm.name" 
                             type="text" 
-                            placeholder="e.g., Laptops" 
-                            class="w-full border border-slate-300 rounded-sm px-3 py-2 text-sm focus:ring-1 focus:ring-purple-600 focus:border-purple-600" 
+                            :placeholder="activeTab === 'main' ? 'e.g., Electronics' : 'e.g., Laptops'" 
+                            :class="inputClass" 
                             required 
                         />
                         <Button 
                             type="submit"
                             variant="default" 
-                            :disabled="subForm.processing || !subForm.parent_id" 
+                            :disabled="categoryForm.processing || (activeTab === 'sub' && !categoryForm.parent_id)" 
                             class="w-full text-xs font-bold uppercase"
                         >
                             <Plus class="w-3.5 h-3.5 mr-2" />
-                            {{ subForm.processing ? 'Saving...' : 'Add Sub-Category' }}
-                        </button>
+                            {{ categoryForm.processing ? 'Saving...' : `Add ${activeTab === 'main' ? 'Main Category' : 'Sub-Category'}` }}
+                        </Button>
                     </form>
                 </div>
             </div>
